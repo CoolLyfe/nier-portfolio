@@ -5,7 +5,7 @@
    number, postal address, photo.
    ================================================================== */
 
-export type SectionId = 'system' | 'intel' | 'logs' | 'comms'
+export type TabId = 'map' | 'quests' | 'items' | 'weapons' | 'skills' | 'intel' | 'system'
 
 export interface Project {
   id: string
@@ -29,6 +29,8 @@ export interface Project {
 
 export interface LogEntry {
   id: string
+  /** QUESTS tab: main = work / responsibilities, side = activities */
+  quest?: 'main' | 'side'
   period: string
   title: string
   place: string
@@ -203,34 +205,37 @@ export const projects: Project[] = [
   {
     id: 'portfolio',
     code: 'PORTFOLIO',
-    title: 'Ce portfolio — système YoRHa',
-    summary: 'Reproduction du menu système de NieR: Automata.',
+    title: 'Ce portfolio — menu YoRHa',
+    summary: 'Reproduction du menu de NieR: Automata, hacking inclus.',
     period: 'Sept. 2026',
     context: 'Projet personnel, réalisé pour le cours « Portfolio professionnel » du S3.',
     objective:
-      'Présenter mon parcours sous la forme d’un menu de jeu navigable au clavier, tout en restant lisible sur mobile.',
-    stack: ['React 19', 'TypeScript', 'Tailwind CSS 4', 'Framer Motion', 'Vite'],
+      'Présenter mon parcours sous la forme du menu de NieR: Automata : navigation par onglets, aperçus sobres, et un mini-jeu de hacking pour accéder aux données détaillées.',
+    stack: ['React 19', 'TypeScript', 'Tailwind CSS 4', 'Framer Motion', 'Canvas 2D', 'Vite'],
     architecture: [
       { name: 'data/profile.ts', role: 'Tout le contenu, séparé de l’interface.' },
-      { name: 'Window', role: 'Fenêtres à coins biseautés (clip-path).' },
-      { name: 'Expanded', role: 'Zoom d’une carte vers sa vue détaillée (Framer Motion).' },
-      { name: 'HackingMode', role: 'Terminal caché : fichiers chiffrés, export du CV.' },
+      { name: 'menu/tabs.tsx', role: 'Les 7 onglets et l’aperçu de chaque entrée.' },
+      { name: 'menu/HackGame.tsx', role: 'Mini-jeu de hacking en Canvas : vaisseau, noyau, projectiles, collisions.' },
+      { name: 'menu/Breach.tsx', role: 'Fenêtre → hacking → vue détaillée (animation partagée Framer Motion).' },
+      { name: 'hack/Terminal.tsx', role: 'Terminal caché : archives chiffrées, export du CV.' },
     ],
     metrics: [
-      { k: 'Sections', v: '4' },
+      { k: 'Onglets', v: '7' },
       { k: 'Dépendances', v: '3' },
+      { k: 'Données perso', v: '1 fichier' },
     ],
     role: [
       'Direction artistique et structure des contenus.',
       'Développé avec l’aide d’un assistant IA (Claude Code) : relecture, choix et adaptation du code.',
     ],
     challenges: [
-      'Bordures d’1 px qui suivent les coins biseautés : une bordure CSS classique est coupée par clip-path, d’où un double calque.',
+      'Changer de palette sur une seule fenêtre (hacking) : les couleurs passent par des variables CSS redéfinies localement.',
+      'Mini-jeu jouable à la souris, au doigt et au clavier, avec une option pour le passer.',
       'Garder une interface de jeu dense tout en restant lisible sur un écran de 400 px.',
     ],
     retrospective:
-      'Séparer le contenu de l’interface a permis de refondre entièrement le design sans réécrire une ligne de texte.',
-    hardSkills: ['Développement web', 'TypeScript'],
+      'Séparer le contenu de l’interface a permis de refondre trois fois le design sans réécrire une ligne de texte.',
+    hardSkills: ['Développement web', 'TypeScript', 'Canvas'],
     softSkills: ['Créativité', 'Esprit critique'],
     links: [{ label: 'Code source', href: 'https://github.com/CoolLyfe/nier-portfolio' }],
   },
@@ -287,6 +292,7 @@ export const education: LogEntry[] = [
 export const experience: LogEntry[] = [
   {
     id: 'lavage',
+    quest: 'main',
     period: 'Été 2025',
     title: 'Employé polyvalent',
     place: 'Station de lavage automobile',
@@ -296,6 +302,7 @@ export const experience: LogEntry[] = [
   },
   {
     id: 'tutorat',
+    quest: 'main',
     period: '2024 – 2025',
     title: 'Responsable du tutorat en informatique',
     place: 'Lycée',
@@ -305,6 +312,7 @@ export const experience: LogEntry[] = [
   },
   {
     id: 'bdl',
+    quest: 'main',
     period: '2024 – 2025',
     title: 'Co-président du bureau des lycéens',
     place: 'Lycée',
@@ -314,6 +322,7 @@ export const experience: LogEntry[] = [
   },
   {
     id: 'cabinet',
+    quest: 'main',
     period: 'Nov. 2024',
     title: 'Assistant administratif',
     place: 'Cabinet d’expertise comptable',
@@ -323,6 +332,7 @@ export const experience: LogEntry[] = [
   },
   {
     id: 'eloquence',
+    quest: 'side',
     period: '2023 – 2024',
     title: 'Concours d’éloquence',
     place: 'Dont Lions Club',
@@ -332,6 +342,7 @@ export const experience: LogEntry[] = [
   },
   {
     id: 'musique',
+    quest: 'side',
     period: 'Depuis l’enfance',
     title: 'Pratique musicale — guitare',
     place: 'Conservatoire',
@@ -341,6 +352,7 @@ export const experience: LogEntry[] = [
   },
   {
     id: 'club3d',
+    quest: 'side',
     period: 'Collège (4e – 3e)',
     title: 'Club création',
     place: 'Collège Saint Jean',
@@ -397,11 +409,13 @@ export const contact = {
   location: 'Toulouse, France',
 }
 
-/** Look up any proof id (project or log entry) for cross-links. */
-export function findProof(id: string): { kind: 'project' | 'log'; label: string } | null {
+/** Look up any proof id (project or log entry) → the tab that shows it. */
+export function findProof(id: string): { tab: TabId; label: string; summary: string } | null {
   const p = projects.find((x) => x.id === id)
-  if (p) return { kind: 'project', label: p.code }
-  const l = [...education, ...experience].find((x) => x.id === id)
-  if (l) return { kind: 'log', label: l.title.split(' — ')[0].toUpperCase() }
+  if (p) return { tab: 'intel', label: p.code, summary: p.summary }
+  const e = education.find((x) => x.id === id)
+  if (e) return { tab: 'map', label: e.place.toUpperCase(), summary: e.title }
+  const x = experience.find((y) => y.id === id)
+  if (x) return { tab: 'quests', label: x.title.toUpperCase(), summary: x.summary }
   return null
 }

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { SECTIONS } from '../components/Shell'
-import { projects, type SectionId } from '../data/profile'
+import { projects, type TabId } from '../data/profile'
+import { TABS } from '../menu/tabs'
 import { cvJson, cvMarkdown, download } from './cv'
 import { FILES, findFile } from './files'
 
@@ -15,7 +15,7 @@ interface Line {
 const TONE: Record<Tone, string> = {
   out: 'text-fg',
   cmd: 'text-beige',
-  ok: 'text-[#39ff7a]',
+  ok: 'text-[#ff6a2b]',
   err: 'text-[#ff2e3f]',
   warn: 'text-[#ffb13b]',
   sys: 'text-dim',
@@ -41,7 +41,7 @@ export function Terminal({
   visible: boolean
   onExit: () => void
   onMinimize: () => void
-  onNavigate: (s: SectionId, openId?: string) => void
+  onNavigate: (tab: TabId, openId?: string) => void
 }) {
   const [lines, setLines] = useState<Line[]>(() => [
     mk('YORHA_OS v11.4 — OVERRIDE ACCEPTED', 'ok'),
@@ -124,7 +124,7 @@ export function Terminal({
           mk('  cat <fichier>        afficher un fichier'),
           mk('  crack <fichier>      déchiffrer une archive .enc'),
           mk('  download cv [--json] exporter le CV structuré'),
-          mk('  open <section|projet> ouvrir dans l’interface (system, intel, logs, comms, myst…)'),
+          mk('  open <onglet|projet> ouvrir dans l’interface (map, intel, system, myst…)'),
           mk('  whoami | history | clear | exit'),
         )
       case 'ls': {
@@ -169,7 +169,7 @@ export function Terminal({
         return print(mk('Transfert terminé. CV exporté.', 'ok'))
       }
       case 'open': {
-        const s = SECTIONS.find((x) => x.id === arg.toLowerCase())
+        const s = TABS.find((x) => x.id === arg.toLowerCase())
         if (s) {
           print(mk(`Ouverture de ${s.label}…`, 'ok'))
           return onNavigate(s.id)
@@ -209,7 +209,7 @@ export function Terminal({
       e.preventDefault()
       const parts = input.split(' ')
       const last = parts.pop() ?? ''
-      const pool = parts.length === 0 ? COMMANDS : [...FILES.map((f) => f.path), 'cv', 'cv.md', ...SECTIONS.map((s) => s.id)]
+      const pool = parts.length === 0 ? COMMANDS : [...FILES.map((f) => f.path), 'cv', 'cv.md', ...TABS.map((s) => s.id)]
       const hits = pool.filter((p) => p.startsWith(last))
       if (hits.length === 1) setInput([...parts, hits[0]].join(' '))
       else if (hits.length > 1) print(mk(hits.join('   '), 'sys'))
@@ -260,7 +260,7 @@ export function Terminal({
                   autoCapitalize="off"
                   autoComplete="off"
                   aria-label="Commande"
-                  className="min-w-0 flex-1 bg-transparent text-fg caret-[#39ff7a] outline-none focus-visible:outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-fg caret-[#ff6a2b] outline-none focus-visible:outline-none"
                 />
               </div>
             </div>

@@ -1,157 +1,254 @@
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Expanded } from './components/Expanded'
-import { BottomBar, SECTIONS, TopBar, Watermarks } from './components/Shell'
-import { UiContext } from './components/ui'
-import { identity, type SectionId } from './data/profile'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Row, UiContext, modalOpen, useListKeys } from './components/ui'
+import { identity, type TabId } from './data/profile'
 import { Terminal } from './hack/Terminal'
 import { useBlip, usePersistentFlag } from './hooks/useSettings'
-import { Comms } from './sections/Comms'
-import { Intel } from './sections/Intel'
-import { Logs } from './sections/Logs'
-import { System } from './sections/System'
+import { DetailLayer, MacroWindow, type Phase } from './menu/Breach'
+import { detailTitle, renderDetail } from './menu/details'
+import { TABS, entriesFor } from './menu/tabs'
 
-const readHash = (): SectionId => {
+const readHash = (): TabId => {
   const h = window.location.hash.slice(1)
-  return SECTIONS.some((s) => s.id === h) ? (h as SectionId) : 'system'
+  return TABS.some((t) => t.id === h) ? (h as TabId) : 'system'
 }
-
-// Deep links: ?open=<project|log id> opens a window, ?hack starts in hacking mode.
+// Deep links: ?open=<id> shows a detail, ?hack=<id> starts its hacking sequence,
+// ?skipboot skips the intro.
 const params = new URLSearchParams(window.location.search)
-
-const typing = (e: KeyboardEvent) => (e.target as HTMLElement).closest('input, textarea') !== null
+const NO_SETTINGS = { crt: false, setCrt: () => {}, sound: false, setSound: () => {}, openTerminal: () => {} }
 
 export default function App() {
-  const [section, setSection] = useState<SectionId>(readHash)
-  const [logsTab, setLogsTab] = useState(0)
-  const [openId, setOpenId] = useState<string | null>(() => params.get('open'))
-  const [hack, setHack] = useState(() => params.has('hack'))
-  const [termVisible, setTermVisible] = useState(() => params.has('hack'))
-  const [desc, setDesc] = useState(() => SECTIONS.find((s) => s.id === readHash())!.desc)
-  const [crt, setCrt] = usePersistentFlag('yorha.crt', true)
-  const [sound, setSound] = usePersistentFlag('yorha.sound', false)
+  const [tab, setTab] = useState<TabId>(readHash)
+  // cursor position per tab; a deep-linked id pre-selects its entry
+  const [sel, setSel] = useState<Record<string, number>>(() => {
+    const id = params.get('open') ?? params.get('hack')
+    const t = readHash()
+    const i = id ? entriesFor(t, NO_SETTINGS).findIndex((e) => e.id === id) : -1
+    return i >= 0 ? { [t]: i } : {}
+  })
+  const [breach, setBreach] = useState<{ id: string; phase: Phase } | null>(() => {
+    const open = params.get('open')
+    const hack = params.get('hack')
+    return open ? { id: open, phase: 'open' } : hack ? { id: hack, phase: 'hacking' } : null
+  })
+  const [terminal, setTerminal] = useState<'closed' | 'open' | 'min'>('closed')
+  const [desc, setDesc] = useState(() => TABS.find((t) => t.id === readHash())!.desc)
+  const [crt, setCrt] = usePersistentFlag('nier.crt', true)
+  const [sound, setSound] = usePersistentFlag('nier.sound', false)
   const [booting, setBooting] = useState(() => {
     try {
-      return !params.has('skipboot') && sessionStorage.getItem('yorha.booted') !== '1'
+      return !params.has('skipboot') && sessionStorage.getItem('nier.booted') !== '1'
     } catch {
       return true
     }
   })
   const blip = useBlip(sound)
   const ui = useMemo(() => ({ blip, setDesc }), [blip])
+  const tabsRef = useRef<HTMLElement>(null)
 
-  const go = useCallback((id: SectionId) => {
-    setSection(id)
-    setDesc(SECTIONS.find((s) => s.id === id)!.desc)
-    history.replaceState(null, '', `#${id}`)
+  const tabIdx = TABS.findIndex((t) => t.id === tab)
+  const tabDef = TABS[tabIdx]
+  const openTerminal = useCallback(() => setTerminal('open'), [])
+  const settings = { crt, setCrt, sound, setSound, openTerminal }
+  const entries = entriesFor(tab, settings)
+  const cur = Math.min(sel[tab] ?? 0, entries.length - 1)
+  const entry = entries[cur]
+  const setCur = useCallback((i: number) => setSel((s) => ({ ...s, [tab]: i })), [tab])
+
+  const go = useCallback((id: TabId) => {
+    setTab(id)
+    setDesc(TABS.find((t) => t.id === id)!.desc)
+    history.replaceState(null, '', `${window.location.pathname}#${id}`)
   }, [])
 
-  // Hacking mode: glitch burst, swap theme variables, open the terminal.
-  const toggleHack = useCallback(() => {
-    document.body.classList.add('glitching')
-    setTimeout(() => document.body.classList.remove('glitching'), 540)
-    setTimeout(() => {
-      setHack((h) => {
-        setTermVisible(!h)
-        return !h
-      })
-    }, 160)
-    blip('select')
-  }, [blip])
-
+  // keep the active tab visible in the scrollable tab bar (mobile)
   useEffect(() => {
-    document.documentElement.dataset.mode = hack ? 'hack' : 'system'
-  }, [hack])
+    tabsRef.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  }, [tab])
 
-  useEffect(() => {
-    const onPop = () => setSection(readHash())
-    window.addEventListener('hashchange', onPop)
-    return () => window.removeEventListener('hashchange', onPop)
-  }, [])
+  // Confirm = start hacking for hackable entries, else the entry's own action.
+  const confirm = (i: number) => {
+    const e = entries[i]
+    if (!e) return
+    if (e.hackable) setBreach({ id: e.id, phase: 'hacking' })
+    else e.onConfirm?.()
+  }
+  useListKeys(entries.length, cur, setCur, confirm)
 
-  // Global keys: 1–4 / Q E switch category, ` toggles hacking mode.
+  // ←/→ or Q/E switch tabs, 1–7 jump, ² / ` toggles the terminal.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (typing(e) || e.metaKey || e.ctrlKey || e.altKey || openId || booting) return
-      const idx = SECTIONS.findIndex((s) => s.id === section)
+      if ((e.target as HTMLElement).closest('input, textarea') || e.metaKey || e.ctrlKey || e.altKey || booting) return
+      if (e.key === '`' || e.key === '²') {
+        setTerminal((t) => (t === 'open' ? 'min' : 'open'))
+        return
+      }
+      if (modalOpen()) return
+      const k = e.key.toLowerCase()
       const n = Number(e.key)
-      if (n >= 1 && n <= SECTIONS.length) go(SECTIONS[n - 1].id)
-      else if (e.key.toLowerCase() === 'q') go(SECTIONS[(idx - 1 + SECTIONS.length) % SECTIONS.length].id)
-      else if (e.key.toLowerCase() === 'e') go(SECTIONS[(idx + 1) % SECTIONS.length].id)
-      else if (e.key === '`' || e.key === '²') return toggleHack()
+      if (e.key === 'ArrowLeft' || k === 'q') go(TABS[(tabIdx - 1 + TABS.length) % TABS.length].id)
+      else if (e.key === 'ArrowRight' || k === 'e') go(TABS[(tabIdx + 1) % TABS.length].id)
+      else if (n >= 1 && n <= TABS.length) go(TABS[n - 1].id)
       else return
-      blip('select')
+      e.preventDefault()
+      blip('move')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [section, openId, booting, go, blip, toggleHack])
+  }, [tabIdx, booting, go, blip])
+
+  // From a skill's proof list: jump to that tab and select the entry.
+  const jump = (to: TabId, id: string) => {
+    setBreach(null)
+    go(to)
+    const i = entriesFor(to, settings).findIndex((e) => e.id === id)
+    setSel((s) => ({ ...s, [to]: Math.max(0, i) }))
+  }
 
   const endBoot = useCallback(() => {
     setBooting(false)
     try {
-      sessionStorage.setItem('yorha.booted', '1')
+      sessionStorage.setItem('nier.booted', '1')
     } catch {
       /* ignore */
     }
   }, [])
 
-  const sectionIdx = SECTIONS.findIndex((s) => s.id === section)
+  const phase: Phase = breach?.phase ?? 'idle'
+  const hints =
+    phase === 'hacking'
+      ? [['◄▲▼►', 'Déplacer'], ['AUTO', 'Tir'], ['B', 'Abandonner']]
+      : phase === 'open'
+        ? [['▲▼', 'Défiler'], ['B', 'Fermer']]
+        : [['◄ ►', 'Onglet'], ['▲ ▼', 'Sélection'], ['A', entry?.hackable ? 'Hacker' : 'Confirmer'], ['²', 'Terminal']]
 
   return (
     <UiContext.Provider value={ui}>
       <AnimatePresence>{booting && <Boot onDone={endBoot} />}</AnimatePresence>
       {crt && <div className="crt" aria-hidden />}
-      {hack && (
-        <>
-          <div className="hack-floor" aria-hidden />
-          <div className="hack-horizon" aria-hidden />
-        </>
-      )}
-      <Watermarks section={sectionIdx} />
 
       <LayoutGroup>
-        <div id="app" className="relative z-10 flex min-h-dvh flex-col">
-          <TopBar active={section} onSelect={go} hack={hack} onHack={toggleHack} />
+        <div className="flex min-h-dvh flex-col">
+          {/* ---- top: OS line + tab bar + ▼ rule + title ---- */}
+          <header className="px-4 pt-3 sm:px-10">
+            <div className="label flex justify-between gap-4">
+              <span>YoRHa // {identity.name}</span>
+              <span className="max-sm:hidden">{identity.unit}</span>
+            </div>
+            <nav ref={tabsRef} aria-label="Onglets" className="mt-3 flex overflow-x-auto border-b border-line pb-2 [scrollbar-width:none]">
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  aria-current={t.id === tab}
+                  onMouseEnter={() => setDesc(t.desc)}
+                  onClick={() => {
+                    blip('select')
+                    go(t.id)
+                  }}
+                  className="tab"
+                >
+                  {t.label}
+                </button>
+              ))}
+            </nav>
+            <div className="tri-rule mt-2" aria-hidden />
+            <div className="mt-5 flex items-end gap-4">
+              <h1 key={tab} className="boot-in font-display text-4xl leading-none tracking-[0.14em] sm:text-5xl">
+                {tabDef.label}
+              </h1>
+              <p className="label mb-1">
+                {tabDef.label} — {tabDef.sub}
+              </p>
+            </div>
+          </header>
 
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-10 sm:py-8">
-            <div key={section} className="boot-in">
-              {section === 'system' && <System />}
-              {section === 'intel' && <Intel onOpen={setOpenId} />}
-              {section === 'logs' && <Logs tab={logsTab} setTab={setLogsTab} onOpen={setOpenId} />}
-              {section === 'comms' && <Comms />}
+          {/* ---- two-column split ---- */}
+          <main className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 content-start gap-6 px-4 py-6 sm:px-10 md:grid-cols-[minmax(15rem,21rem)_minmax(0,1fr)] md:gap-10">
+            <div key={tab} role="listbox" aria-label={tabDef.label} className="boot-in space-y-1.5 md:pl-6">
+              {entries.map((e, i) => (
+                <Row
+                  key={e.id}
+                  label={e.label}
+                  meta={e.meta}
+                  desc={e.desc}
+                  selected={i === cur}
+                  onSelect={() => setCur(i)}
+                  onConfirm={() => confirm(i)}
+                />
+              ))}
+            </div>
+
+            <div className="min-w-0">
+              {entry && (
+                <MacroWindow
+                  id={entry.id}
+                  title={entry.title}
+                  code={entry.code}
+                  hackable={!!entry.hackable}
+                  phase={breach?.id === entry.id ? phase : 'idle'}
+                  onBreach={() => setBreach({ id: entry.id, phase: 'hacking' })}
+                  onHacked={() => setBreach({ id: entry.id, phase: 'open' })}
+                  onAbort={() => setBreach(null)}
+                >
+                  {entry.macro}
+                </MacroWindow>
+              )}
             </div>
           </main>
 
-          <BottomBar desc={desc} crt={crt} setCrt={setCrt} sound={sound} setSound={setSound} />
+          {/* ---- bottom status bar ---- */}
+          <footer className="sticky bottom-0 z-20 border-t border-line bg-bg/95 px-4 backdrop-blur-sm sm:px-10">
+            <div className="flex min-h-10 items-center gap-3 py-2">
+              <span className="h-2 w-2 flex-none bg-fg" />
+              <p key={desc} className="boot-in text-sm">
+                {desc}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-line/40 py-2">
+              {hints.map(([k, v]) => (
+                <span key={k} className="label flex items-center text-fg!">
+                  <span className="key">{k}</span>
+                  {v}
+                </span>
+              ))}
+            </div>
+          </footer>
         </div>
 
-        <Expanded id={openId} onClose={() => setOpenId(null)} />
+        <DetailLayer
+          id={breach?.phase === 'open' ? breach.id : null}
+          title={breach ? detailTitle(breach.id) : ''}
+          onClose={() => setBreach(null)}
+        >
+          {breach && renderDetail(breach.id, jump)}
+        </DetailLayer>
       </LayoutGroup>
 
-      {hack && (
-        <>
+      {terminal !== 'closed' && (
+        <div data-mode="hack">
           <Terminal
-            visible={termVisible}
-            onExit={toggleHack}
-            onMinimize={() => setTermVisible(false)}
-            onNavigate={(s, id) => {
-              go(s)
+            visible={terminal === 'open'}
+            onExit={() => setTerminal('closed')}
+            onMinimize={() => setTerminal('min')}
+            onNavigate={(to, id) => {
+              go(to)
               if (id) {
-                setTermVisible(false)
-                setOpenId(id)
+                setTerminal('min')
+                setBreach({ id, phase: 'open' })
               }
             }}
           />
-          {!termVisible && (
+          {terminal === 'min' && (
             <button
               type="button"
-              onClick={() => setTermVisible(true)}
-              className="fixed right-4 bottom-24 z-40 border border-accent bg-bg px-3 py-2 font-display text-xs tracking-[0.2em] text-accent hover:bg-accent hover:text-bg sm:right-8"
+              onClick={() => setTerminal('open')}
+              className="fixed right-4 bottom-28 z-40 border border-line bg-bg px-3 py-2 font-display text-xs tracking-[0.2em] text-accent hover:bg-sel hover:text-on-sel sm:right-10"
             >
               &gt; TERMINAL_
             </button>
           )}
-        </>
+        </div>
       )}
     </UiContext.Provider>
   )
@@ -159,21 +256,11 @@ export default function App() {
 
 /** Short boot sequence, once per session. Any key or click skips it. */
 function Boot({ onDone }: { onDone: () => void }) {
-  const steps = [
-    'YORHA_OS v11.4 ………………………… BOOT',
-    'MEMORY CHECK ……………………………… OK',
-    `LOADING UNIT DATA: ${identity.name.toUpperCase()}`,
-    'PERSONALITY DATA ……………………… OK',
-    'SYSTEM MENU ………………………………… READY',
-  ]
+  const steps = ['YoRHa SYSTEM BOOT', 'MEMORY CHECK ……… OK', `UNIT DATA: ${identity.name.toUpperCase()}`, 'MENU ……… READY']
   const [n, setN] = useState(0)
 
   useEffect(() => {
-    if (n >= steps.length) {
-      const t = setTimeout(onDone, 350)
-      return () => clearTimeout(t)
-    }
-    const t = setTimeout(() => setN(n + 1), 230)
+    const t = setTimeout(n >= steps.length ? onDone : () => setN(n + 1), n >= steps.length ? 300 : 220)
     return () => clearTimeout(t)
   }, [n, steps.length, onDone])
 
@@ -183,19 +270,15 @@ function Boot({ onDone }: { onDone: () => void }) {
   }, [onDone])
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[90] grid place-items-center bg-bg"
-      exit={{ opacity: 0, transition: { duration: 0.25 } }}
-      onClick={onDone}
-    >
-      <div className="w-[min(34rem,90vw)] font-display text-sm tracking-[0.15em]">
+    <motion.div className="fixed inset-0 z-[90] grid place-items-center bg-bg" exit={{ opacity: 0, transition: { duration: 0.25 } }} onClick={onDone}>
+      <div className="w-[min(30rem,88vw)] font-display tracking-[0.15em]">
         {steps.slice(0, n).map((s) => (
           <p key={s} className="boot-in py-0.5">
             {s}
           </p>
         ))}
         <div className="mt-5 h-1.5 border border-line">
-          <div className="h-full bg-fg transition-[width] duration-200" style={{ width: `${(n / steps.length) * 100}%` }} />
+          <div className="h-full bg-sel transition-[width] duration-200" style={{ width: `${(n / steps.length) * 100}%` }} />
         </div>
         <p className="label mt-3">Cliquer ou appuyer sur une touche pour passer</p>
       </div>

@@ -17,44 +17,64 @@ Le téléphone, l'adresse postale et la photo du CV ne sont volontairement pas p
 
 Les captures d'écran servant de preuves vont dans `public/evidence/`.
 
+## Onglets
+
+| Onglet | Contenu |
+|---|---|
+| MAP | Parcours : EPITA, lycée, collège, position actuelle |
+| QUESTS | Quêtes principales (expériences) et secondaires (activités) |
+| ITEMS | Langues et centres d'intérêt |
+| WEAPONS | Hard skills, reliés à leurs preuves |
+| SKILLS | Soft skills, bilan, perspectives |
+| INTEL | Projets |
+| SYSTEM | Profil, motivation, contact, export du CV, terminal, réglages |
+
 ## Navigation
 
 | Touche | Action |
 |---|---|
-| `1`–`4`, `Q` / `E` | Changer de catégorie (SYSTEM / INTEL / LOGS / COMMS) |
+| `←` `→` (ou `Q` / `E`, `1`–`7`) | Changer d'onglet |
 | `↑` `↓` | Déplacer la sélection |
-| `Entrée` | Ouvrir la fenêtre sélectionnée |
-| `Échap` | Fermer la fenêtre |
-| `` ` `` ou `²` | Mode Hacking |
+| `A` / `Entrée` | Confirmer : lance le hacking sur les fenêtres chiffrées |
+| `B` / `Échap` | Abandonner le hacking, fermer une fenêtre |
+| `²` ou `` ` `` | Terminal |
 
-L'effet CRT et le son se règlent dans la barre du bas.
+Sur mobile, un premier tap sélectionne une ligne et un second la confirme.
 
-## Mode Hacking
+## Hacking
 
-Le bouton `> sudo hack --override` fait basculer toute l'interface en noir, rouge et vert, et ouvre un terminal.
-Commandes disponibles : `help`, `ls -a`, `cat`, `crack` (il faut recopier une clé d'accès), `download cv [--json]`, `open <section|projet>`.
+Pour ouvrir le détail d'une fenêtre (projet, étape du parcours, quête, compétence), il faut la « hacker ».
+La fenêtre passe en noir et orange et affiche un mini-jeu : le vaisseau, piloté à la souris, au doigt ou aux flèches, tire automatiquement sur le noyau.
+Chaque projectile orange qui touche le vaisseau fait régénérer le noyau. Une fois le noyau détruit, la fenêtre s'agrandit et affiche le détail.
+Le bouton « Passer » permet de sauter le jeu. Si le système demande de réduire les animations, le jeu est remplacé par un court déchiffrement.
+
+## Terminal
+
+Accessible depuis SYSTEM › Terminal, ou avec la touche `²`.
+Commandes : `help`, `ls -a`, `cat`, `crack` (il faut recopier une clé d'accès), `download cv [--json]`, `open <onglet|projet>`.
 Cinq archives chiffrées sont cachées dans `.blackbox/`.
 
 ## Liens directs
 
-- `#intel`, `#logs`… ouvrent une catégorie.
-- `?open=myst` ouvre directement une fenêtre (projet ou entrée de LOGS).
-- `?hack` démarre en mode Hacking, `?skipboot` saute la séquence de démarrage.
+- `#intel`, `#quests`… ouvrent un onglet.
+- `?open=myst` ouvre directement le détail d'une fenêtre, `?hack=myst` lance son hacking.
+- `?skipboot` saute la séquence de démarrage.
 
 ## Structure
 
 ```
 src/
 ├── data/profile.ts        contenu (seul fichier à modifier)
-├── index.css              palette, cadres, effet de sélection, scanlines
-├── App.tsx                navigation, démarrage, bascule du mode Hacking
+├── index.css              palettes (menu / hacking), onglets, lignes, CRT
+├── App.tsx                onglets, deux colonnes, barre d'état, démarrage
 ├── hooks/useSettings.ts   préférences persistées et son synthétisé
-├── components/
-│   ├── ui.tsx             Window (coins biseautés), Item [>], Meter…
-│   ├── Shell.tsx          onglets, barre de description, watermarks
-│   └── Expanded.tsx       Card (vue résumée) → Expanded (zoom détaillé)
-├── sections/              System, Intel, Logs, Comms
-└── hack/                  Terminal, système de fichiers virtuel, export du CV
+├── components/ui.tsx      Row (■ / ►), Window, Meter, raccourcis clavier
+├── menu/
+│   ├── tabs.tsx           les 7 onglets et l'aperçu de chaque entrée
+│   ├── Breach.tsx         fenêtre → hacking → vue détaillée
+│   ├── HackGame.tsx       mini-jeu de hacking (Canvas 2D)
+│   └── details.tsx        vues détaillées (projet, quête, compétence)
+└── hack/                  terminal, système de fichiers virtuel, export du CV
 ```
 
 ## Déploiement
