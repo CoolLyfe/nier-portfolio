@@ -1,0 +1,185 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------
+   NieR-inspired design tokens.
+   Tailwind v4 reads @theme, so `bg-ink`, `text-bone`, `border-line`…
+   are generated from these variables.
+   ------------------------------------------------------------------ */
+@theme {
+  --color-ink: #1c1b18;        /* background */
+  --color-ink-2: #24231f;      /* raised panel */
+  --color-bone: #e2ded4;       /* primary text / selection fill */
+  --color-ash: #99958c;        /* muted text */
+  --color-line: #4a4740;       /* thin grid lines */
+  --color-alert: #cd664d;      /* sparse accent: warnings, missing data */
+
+  --font-display: 'Share Tech Mono', ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+html {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  /* faint terminal grid */
+  background-image:
+    linear-gradient(to right, rgb(226 222 212 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(226 222 212 / 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+::selection {
+  background: var(--color-bone);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 1px dashed var(--color-bone);
+  outline-offset: 3px;
+}
+
+/* ---------- Corner brackets (the YoRHa-terminal frame) ---------- */
+.frame {
+  position: relative;
+  border: 1px solid var(--color-line);
+}
+.frame::before,
+.frame::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  border-color: var(--color-bone);
+  border-style: solid;
+}
+.frame::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+.frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+/* ---------- Selectable row: the in-game cursor highlight ---------- */
+.nier-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.9rem;
+  color: var(--color-bone);
+  cursor: pointer;
+  transition: none; /* crisp snap, no easing */
+}
+.nier-item .nier-square {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: none;
+  background: var(--color-bone);
+}
+.nier-item:hover,
+.nier-item[aria-current='true'],
+.nier-item[aria-selected='true'] {
+  background: var(--color-bone);
+  color: var(--color-ink);
+}
+.nier-item:hover .nier-square,
+.nier-item[aria-current='true'] .nier-square,
+.nier-item[aria-selected='true'] .nier-square {
+  background: var(--color-ink);
+}
+/* the small pointer that sits left of the active row */
+.nier-item[aria-current='true']::before,
+.nier-item[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  left: -1.1rem;
+  top: 50%;
+  width: 0.7rem;
+  height: 2px;
+  background: var(--color-bone);
+  transform: translateY(-50%);
+}
+@media (max-width: 767px) {
+  .nier-item::before {
+    display: none;
+  }
+}
+.nier-item:active {
+  animation: flash 120ms steps(2) 1;
+}
+
+@keyframes flash {
+  50% {
+    background: var(--color-ash);
+  }
+}
+
+/* ---------- Section entrance: short glitch-free wipe ---------- */
+.boot-in {
+  animation: boot 380ms steps(6, end) both;
+}
+@keyframes boot {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0.4;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+/* ---------- Scanlines + noise overlay (toggleable) ---------- */
+.scanlines {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0) 0px,
+    rgb(0 0 0 / 0) 2px,
+    rgb(0 0 0 / 0.16) 3px
+  );
+  mix-blend-mode: multiply;
+}
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* blinking terminal caret */
+.caret::after {
+  content: '_';
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-in,
+  .caret::after,
+  .nier-item:active {
+    animation: none;
+  }
+}
