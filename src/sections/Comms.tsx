@@ -1,19 +1,20 @@
 import { useState, type FormEvent } from 'react'
-import { Frame, SectionTitle, isTodo } from '../components/ui'
-import { contact } from '../data/profile'
+import { Field, Heading, Item, Split, Window, useListKeys, useUi } from '../components/ui'
+import { contact, identity } from '../data/profile'
 
-type Blip = (k?: 'move' | 'select' | 'back') => void
-
-/** COMMS — direct channels + a "transmission" form that opens the mail client. */
-export function Comms({ blip }: { blip: Blip }) {
+/** COMMS / CONTACT — channels + a transmission form (opens the mail client). */
+export function Comms() {
+  const [sel, setSel] = useState(0)
+  const { blip } = useUi()
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
 
   const channels = [
-    { id: 'MAIL', value: contact.email, href: `mailto:${contact.email}` },
-    { id: 'GITHUB', value: contact.github.replace('https://', ''), href: contact.github },
-    { id: 'LINKEDIN', value: contact.linkedin, href: contact.linkedin },
+    { label: 'Transmission', desc: 'Rédiger un message.' },
+    { label: 'Mail', desc: contact.email, href: `mailto:${contact.email}` },
+    { label: 'GitHub', desc: contact.github.replace('https://', ''), href: contact.github },
   ]
+  useListKeys(channels.length, sel, setSel)
 
   const send = (e: FormEvent) => {
     e.preventDefault()
@@ -23,54 +24,52 @@ export function Comms({ blip }: { blip: Blip }) {
   }
 
   const input =
-    'w-full border border-line bg-ink px-3 py-2 font-mono text-bone placeholder:text-ash/60 focus:border-bone focus:outline-none'
+    'w-full border border-line bg-bg px-3 py-2 font-mono text-fg placeholder:text-dim focus:border-fg focus:outline-none'
 
   return (
-    <section>
-      <SectionTitle title="COMMS" sub="Canal de transmission" />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
-        <Frame label="Canaux ouverts">
-          <ul className="space-y-1">
-            {channels.map((c) =>
-              isTodo(c.value) ? (
-                <li key={c.id} className="flex items-center gap-3 px-3 py-2.5 text-alert">
-                  <span className="h-2 w-2 border border-alert" />
-                  <span className="w-24 font-display tracking-[0.2em]">{c.id}</span>
-                  <span className="text-sm">[ SIGNAL ABSENT : {c.value.slice(5).trim()} ]</span>
-                </li>
-              ) : (
-                <li key={c.id}>
-                  <a href={c.href} target="_blank" rel="noreferrer" className="nier-item" onClick={() => blip('select')}>
-                    <span className="nier-square" />
-                    <span className="w-24 font-display tracking-[0.2em]">{c.id}</span>
-                    <span className="truncate text-sm">{c.value}</span>
-                  </a>
-                </li>
-              ),
-            )}
-          </ul>
-        </Frame>
-
-        <Frame label="Nouvelle transmission">
-          <form onSubmit={send} className="space-y-4">
-            <label className="block">
-              <span className="mb-1 block font-display text-xs tracking-[0.2em] text-ash">OBJET</span>
-              <input required value={subject} onChange={(e) => setSubject(e.target.value)} className={input} placeholder="Proposition de stage…" />
-            </label>
-            <label className="block">
-              <span className="mb-1 block font-display text-xs tracking-[0.2em] text-ash">MESSAGE</span>
-              <textarea required rows={6} value={body} onChange={(e) => setBody(e.target.value)} className={input} placeholder="Bonjour Louis," />
-            </label>
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-xs text-ash">Ouvre votre messagerie avec le message pré-rempli.</p>
-              <button type="submit" className="nier-item w-auto! border border-bone px-5! font-display tracking-[0.25em] before:hidden!">
-                <span className="nier-square" />
-                ÉMETTRE
-              </button>
-            </div>
-          </form>
-        </Frame>
+    <Split
+      list={channels.map((c, i) => (
+        <Item key={c.label} label={c.label} meta={`CH_0${i + 1}`} desc={c.desc} selected={i === sel} onClick={() => setSel(i)} />
+      ))}
+    >
+      <div key={sel} className="boot-in">
+        {sel === 0 ? (
+          <Window title="Nouvelle transmission" code="TX_READY">
+            <form onSubmit={send} className="space-y-4">
+              <p className="label normal-case">Destinataire : {identity.name} &lt;{contact.email}&gt;</p>
+              <label className="block">
+                <span className="label mb-1 block">Objet</span>
+                <input required value={subject} onChange={(e) => setSubject(e.target.value)} className={input} placeholder="Proposition de stage…" />
+              </label>
+              <label className="block">
+                <span className="label mb-1 block">Message</span>
+                <textarea required rows={7} value={body} onChange={(e) => setBody(e.target.value)} className={input} placeholder="Bonjour Louis," />
+              </label>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="text-xs text-dim">Ouvre votre messagerie avec le message pré-rempli.</p>
+                <button type="submit" className="item w-auto! border border-fg px-5!">
+                  <span className="cur">[&gt;]</span>
+                  <span className="sq" />
+                  Émettre
+                </button>
+              </div>
+            </form>
+          </Window>
+        ) : (
+          <Window title={`Canal ${channels[sel].label}`} code={`CH_0${sel + 1}`}>
+            <Heading code="SIGNAL OK">{channels[sel].label}</Heading>
+            <dl className="mb-5">
+              <Field k="Adresse" v={channels[sel].desc} />
+              <Field k="Localisation" v={contact.location} />
+            </dl>
+            <a href={channels[sel].href} target="_blank" rel="noreferrer" className="item w-auto! border border-fg">
+              <span className="cur">[&gt;]</span>
+              <span className="sq" />
+              Ouvrir le canal
+            </a>
+          </Window>
+        )}
       </div>
-    </section>
+    </Split>
   )
 }

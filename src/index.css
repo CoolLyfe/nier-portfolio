@@ -1,171 +1,249 @@
 @import 'tailwindcss';
 
-/* ------------------------------------------------------------------
-   NieR-inspired design tokens.
-   Tailwind v4 reads @theme, so `bg-ink`, `text-bone`, `border-line`…
-   are generated from these variables.
-   ------------------------------------------------------------------ */
+/* ==================================================================
+   YoRHa system palette. Every colour goes through a CSS variable so
+   HACKING MODE can swap the whole theme by flipping one attribute.
+   ================================================================== */
+:root {
+  --bg: #161512;          /* deep sepia-black */
+  --panel: #1d1c18;       /* window body */
+  --panel-head: #26241f;  /* window title strip */
+  --fg: #e2ded4;          /* bone / parchment */
+  --beige: #c2bcab;       /* military beige */
+  --dim: #6b675d;         /* inactive */
+  --line: #48453d;        /* 1px frame lines */
+  --grid: rgb(226 222 212 / 0.035);
+  --sel-bg: #e2ded4;      /* cursor inversion */
+  --sel-fg: #161512;
+  --accent: #c2bcab;
+  --glow: none;
+  --cut: 14px;            /* 45° corner size */
+}
+
+html[data-mode='hack'] {
+  --bg: #020302;
+  --panel: rgb(4 12 6 / 0.92);
+  --panel-head: rgb(18 60 30 / 0.55);
+  --fg: #b8ffcf;
+  --beige: #39ff7a;
+  --dim: #2f7a47;
+  --line: #1f9a4a;
+  --grid: rgb(57 255 122 / 0.09);
+  --sel-bg: #ff2e3f;
+  --sel-fg: #020302;
+  --accent: #ff2e3f;
+  --glow: 0 0 6px rgb(57 255 122 / 0.55);
+}
+
 @theme {
-  --color-ink: #1c1b18;        /* background */
-  --color-ink-2: #24231f;      /* raised panel */
-  --color-bone: #e2ded4;       /* primary text / selection fill */
-  --color-ash: #99958c;        /* muted text */
-  --color-line: #4a4740;       /* thin grid lines */
-  --color-alert: #cd664d;      /* sparse accent: warnings, missing data */
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-head: var(--panel-head);
+  --color-fg: var(--fg);
+  --color-beige: var(--beige);
+  --color-dim: var(--dim);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
 
   --font-display: 'Share Tech Mono', ui-monospace, monospace;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
 }
 
 html {
-  background: var(--color-ink);
-  color: var(--color-bone);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-mono);
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
+  text-shadow: var(--glow);
 }
 
 body {
   margin: 0;
   min-height: 100dvh;
-  /* faint terminal grid */
+  background-color: var(--bg);
+  /* fine terminal grid + larger module grid */
   background-image:
-    linear-gradient(to right, rgb(226 222 212 / 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(226 222 212 / 0.035) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size:
+    16px 16px,
+    16px 16px,
+    128px 128px,
+    128px 128px;
 }
 
 ::selection {
-  background: var(--color-bone);
-  color: var(--color-ink);
+  background: var(--sel-bg);
+  color: var(--sel-fg);
 }
-
 :focus-visible {
-  outline: 1px dashed var(--color-bone);
+  outline: 1px dashed var(--fg);
   outline-offset: 3px;
 }
 
-/* ---------- Corner brackets (the YoRHa-terminal frame) ---------- */
-.frame {
+/* ---------- Cut-corner window --------------------------------------
+   Outer layer paints the 1px line colour, inner layer is inset by 1px
+   and clipped with the same polygon → a 1px border that follows the
+   45° bevel (a plain `border` would be sliced off by clip-path).
+   Top-left and bottom-right are cut, like the in-game windows.        */
+.bevel {
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+}
+.win {
   position: relative;
-  border: 1px solid var(--color-line);
 }
-.frame::before,
-.frame::after {
-  content: '';
+.win-edge {
+  background: var(--line);
+  padding: 1px;
+}
+/* inner cut = outer − (2 − √2)px, so the diagonal line is exactly 1px */
+.win-body {
+  --ci: calc(var(--cut) - 0.59px);
+  background: var(--panel);
+  clip-path: polygon(var(--ci) 0, 100% 0, 100% calc(100% - var(--ci)), calc(100% - var(--ci)) 100%, 0 100%, 0 var(--ci));
+}
+/* "+" ticks on the two square corners (outside the clipped layer) */
+.win::before,
+.win::after {
+  content: '+';
   position: absolute;
-  width: 10px;
-  height: 10px;
+  font: 400 12px/1 var(--font-display);
+  color: var(--beige);
   pointer-events: none;
-  border-color: var(--color-bone);
-  border-style: solid;
+  z-index: 1;
 }
-.frame::before {
-  top: -1px;
-  left: -1px;
-  border-width: 2px 0 0 2px;
+.win::before {
+  top: -7px;
+  right: -4px;
 }
-.frame::after {
-  bottom: -1px;
-  right: -1px;
-  border-width: 0 2px 2px 0;
+.win::after {
+  bottom: -6px;
+  left: -4px;
 }
 
-/* ---------- Selectable row: the in-game cursor highlight ---------- */
-.nier-item {
+/* ---------- Selectable row: cursor highlight [ > ] ---------------- */
+.item {
   position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.9rem;
   text-align: left;
-  padding: 0.55rem 0.9rem;
-  color: var(--color-bone);
+  color: var(--fg);
+  background: rgb(226 222 212 / 0.05);
   cursor: pointer;
-  transition: none; /* crisp snap, no easing */
+  text-transform: uppercase;
+  font-family: var(--font-display);
+  letter-spacing: 0.16em;
 }
-.nier-item .nier-square {
-  width: 0.55rem;
-  height: 0.55rem;
+:where(html[data-mode='hack']) .item {
+  background: rgb(57 255 122 / 0.05);
+}
+.item .sq {
+  width: 0.6rem;
+  height: 0.6rem;
   flex: none;
-  background: var(--color-bone);
+  background: var(--fg);
 }
-.nier-item:hover,
-.nier-item[aria-current='true'],
-.nier-item[aria-selected='true'] {
-  background: var(--color-bone);
-  color: var(--color-ink);
+.item .cur {
+  width: 1.6rem;
+  flex: none;
+  opacity: 0;
+  font-size: 0.8rem;
 }
-.nier-item:hover .nier-square,
-.nier-item[aria-current='true'] .nier-square,
-.nier-item[aria-selected='true'] .nier-square {
-  background: var(--color-ink);
+.item:hover,
+.item[aria-selected='true'],
+.item[aria-current='true'] {
+  background: var(--sel-bg);
+  color: var(--sel-fg);
+  text-shadow: none;
 }
-/* the small pointer that sits left of the active row */
-.nier-item[aria-current='true']::before,
-.nier-item[aria-selected='true']::before {
-  content: '';
-  position: absolute;
-  left: -1.1rem;
-  top: 50%;
-  width: 0.7rem;
-  height: 2px;
-  background: var(--color-bone);
-  transform: translateY(-50%);
+.item:hover .sq,
+.item[aria-selected='true'] .sq,
+.item[aria-current='true'] .sq {
+  background: var(--sel-fg);
 }
-@media (max-width: 767px) {
-  .nier-item::before {
-    display: none;
-  }
+.item:hover .cur,
+.item[aria-selected='true'] .cur,
+.item[aria-current='true'] .cur {
+  opacity: 1;
 }
-.nier-item:active {
-  animation: flash 120ms steps(2) 1;
+/* one-frame flash on selection */
+.item.flash {
+  animation: flash 140ms steps(2) 1;
 }
-
 @keyframes flash {
   50% {
-    background: var(--color-ash);
+    background: var(--beige);
   }
 }
 
-/* ---------- Section entrance: short glitch-free wipe ---------- */
+/* ---------- Tabs (top navigation) --------------------------------- */
+.tab {
+  position: relative;
+  padding: 0.55rem 1.1rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--dim);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.tab:hover {
+  color: var(--fg);
+}
+.tab[aria-current='true'] {
+  background: var(--sel-bg);
+  color: var(--sel-fg);
+  border-color: var(--sel-bg);
+  text-shadow: none;
+}
+/* the small notch under the active tab */
+.tab[aria-current='true']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 10px;
+  height: 6px;
+  translate: -50% 0;
+  background: var(--sel-bg);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* ---------- Misc ---------------------------------------------------- */
+.label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
 .boot-in {
-  animation: boot 380ms steps(6, end) both;
+  animation: boot 320ms steps(5, end) both;
 }
 @keyframes boot {
   from {
     clip-path: inset(0 0 100% 0);
-    opacity: 0.4;
   }
   to {
     clip-path: inset(0 0 0 0);
-    opacity: 1;
   }
 }
 
-/* ---------- Scanlines + noise overlay (toggleable) ---------- */
-.scanlines {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgb(0 0 0 / 0) 0px,
-    rgb(0 0 0 / 0) 2px,
-    rgb(0 0 0 / 0.16) 3px
-  );
-  mix-blend-mode: multiply;
-}
-.scanlines::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* blinking terminal caret */
 .caret::after {
   content: '_';
   animation: blink 1s steps(1) infinite;
@@ -176,10 +254,141 @@ body {
   }
 }
 
+/* ---------- CRT overlay (toggleable) ------------------------------ */
+.crt {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 2px,
+    rgb(0 0 0 / 0.18) 2px 3px
+  );
+}
+.crt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgb(0 0 0 / 0.45) 100%);
+}
+
+/* ---------- HACKING MODE ------------------------------------------ */
+/* perspective vector floor */
+.hack-floor {
+  pointer-events: none;
+  position: fixed;
+  left: -50%;
+  right: -50%;
+  bottom: -10%;
+  height: 60%;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right, rgb(57 255 122 / 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(57 255 122 / 0.35) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(500px) rotateX(62deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to top, black 10%, transparent 90%);
+  animation: floor 3s linear infinite;
+}
+@keyframes floor {
+  to {
+    background-position: 0 60px;
+  }
+}
+.hack-horizon {
+  pointer-events: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 1px;
+  z-index: 0;
+  background: #ff2e3f;
+  box-shadow: 0 0 12px 2px rgb(255 46 63 / 0.6);
+}
+
+/* glitch burst when switching modes */
+.glitching #app {
+  animation: glitch 520ms steps(1) 1;
+}
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+    filter: none;
+  }
+  10% {
+    transform: translate(-6px, 1px) skewX(8deg);
+    clip-path: inset(10% 0 60% 0);
+    filter: hue-rotate(90deg) saturate(3);
+  }
+  20% {
+    transform: translate(5px, -2px);
+    clip-path: inset(50% 0 20% 0);
+  }
+  30% {
+    transform: translate(-3px) skewX(-6deg);
+    clip-path: inset(0 0 85% 0);
+    filter: invert(1);
+  }
+  45% {
+    transform: translate(4px, 2px);
+    clip-path: inset(30% 0 40% 0);
+    filter: none;
+  }
+  60% {
+    transform: translate(-2px);
+    clip-path: inset(70% 0 5% 0);
+  }
+  75% {
+    transform: translate(1px, -1px) skewX(3deg);
+    clip-path: none;
+    filter: contrast(2);
+  }
+  100% {
+    transform: none;
+    clip-path: none;
+    filter: none;
+  }
+}
+.glitch-text {
+  position: relative;
+}
+html[data-mode='hack'] .glitch-text {
+  animation: rgb-split 3.2s steps(1) infinite;
+}
+@keyframes rgb-split {
+  0%,
+  92%,
+  100% {
+    text-shadow: var(--glow);
+    transform: none;
+  }
+  93% {
+    text-shadow:
+      -3px 0 #ff2e3f,
+      3px 0 #39ff7a;
+    transform: translateX(2px);
+  }
+  95% {
+    text-shadow:
+      3px 0 #ff2e3f,
+      -2px 0 #39ff7a;
+    transform: translateX(-2px) skewX(10deg);
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --cut: 10px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .boot-in,
-  .caret::after,
-  .nier-item:active {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
   }
 }

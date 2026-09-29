@@ -1,6 +1,6 @@
 # nier-portfolio
 
-Portfolio de Louis Leymonie (EPITA, promo 2030). L'interface s'inspire du menu système de *NieR: Automata*.
+Portfolio de Louis Leymonie (EPITA, promo 2030). L'interface reproduit le menu système de *NieR: Automata*. C'est un projet de fan, sans lien avec Square Enix ni PlatinumGames, et qui n'utilise aucun élément du jeu.
 
 ## Lancer en local
 
@@ -13,7 +13,7 @@ pnpm build      # génère dist/
 ## Modifier le contenu
 
 Tout le texte du site se trouve dans **`src/data/profile.ts`**.
-Toute valeur qui commence par `TODO:` s'affiche sur le site sous la forme d'un encadré rouge « DONNÉE MANQUANTE ». Il suffit de la remplacer par la vraie information.
+Le téléphone, l'adresse postale et la photo du CV ne sont volontairement pas publiés.
 
 Les captures d'écran servant de preuves vont dans `public/evidence/`.
 
@@ -21,12 +21,25 @@ Les captures d'écran servant de preuves vont dans `public/evidence/`.
 
 | Touche | Action |
 |---|---|
-| `1`–`4` | Aller à SYSTEM / INTEL / LOGS / COMMS |
+| `1`–`4`, `Q` / `E` | Changer de catégorie (SYSTEM / INTEL / LOGS / COMMS) |
 | `↑` `↓` | Déplacer la sélection |
-| `Entrée` | Ouvrir (menu principal) |
-| `Échap` | Retour au menu principal |
+| `Entrée` | Ouvrir la fenêtre sélectionnée |
+| `Échap` | Fermer la fenêtre |
+| `` ` `` ou `²` | Mode Hacking |
 
-Les scanlines et le son peuvent être activés ou coupés dans la barre du bas.
+L'effet CRT et le son se règlent dans la barre du bas.
+
+## Mode Hacking
+
+Le bouton `> sudo hack --override` fait basculer toute l'interface en noir, rouge et vert, et ouvre un terminal.
+Commandes disponibles : `help`, `ls -a`, `cat`, `crack` (il faut recopier une clé d'accès), `download cv [--json]`, `open <section|projet>`.
+Cinq archives chiffrées sont cachées dans `.blackbox/`.
+
+## Liens directs
+
+- `#intel`, `#logs`… ouvrent une catégorie.
+- `?open=myst` ouvre directement une fenêtre (projet ou entrée de LOGS).
+- `?hack` démarre en mode Hacking, `?skipboot` saute la séquence de démarrage.
 
 ## Structure
 
@@ -34,10 +47,14 @@ Les scanlines et le son peuvent être activés ou coupés dans la barre du bas.
 src/
 ├── data/profile.ts        contenu (seul fichier à modifier)
 ├── index.css              palette, cadres, effet de sélection, scanlines
-├── App.tsx                navigation (hash #section) et raccourcis clavier
+├── App.tsx                navigation, démarrage, bascule du mode Hacking
 ├── hooks/useSettings.ts   préférences persistées et son synthétisé
-├── components/            Header/StatusBar, MenuDetail, éléments UI
-└── sections/              Dashboard, System, Intel, Logs, Comms
+├── components/
+│   ├── ui.tsx             Window (coins biseautés), Item [>], Meter…
+│   ├── Shell.tsx          onglets, barre de description, watermarks
+│   └── Expanded.tsx       Card (vue résumée) → Expanded (zoom détaillé)
+├── sections/              System, Intel, Logs, Comms
+└── hack/                  Terminal, système de fichiers virtuel, export du CV
 ```
 
 ## Déploiement

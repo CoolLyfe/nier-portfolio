@@ -1,73 +1,70 @@
-import { useState } from 'react'
-import { MenuDetail } from '../components/MenuDetail'
-import { Frame, SectionTitle, SquareList, Txt } from '../components/ui'
+import { Card } from '../components/Expanded'
+import { Heading, Item, Split, SquareList, Window, useListKeys, useUi } from '../components/ui'
 import {
   education,
   experience,
+  findProof,
   hardSkills,
-  methodSkills,
   outlook,
-  projects,
   selfAssessment,
   softSkills,
+  type LogEntry,
   type Skill,
-  type TimelineEntry,
 } from '../data/profile'
 
-type Blip = (k?: 'move' | 'select' | 'back') => void
+export const LOG_TABS = ['Formation', 'Expériences', 'Hard skills', 'Soft skills', 'Bilan', 'Perspectives'] as const
 
-/** Vertical timeline with square nodes. */
-function Timeline({ entries }: { entries: TimelineEntry[] }) {
+function CardGrid({ entries, onOpen }: { entries: LogEntry[]; onOpen: (id: string) => void }) {
   return (
-    <ol className="relative ml-1 border-l border-line">
+    <div className="grid gap-5 sm:grid-cols-2">
       {entries.map((e) => (
-        <li key={e.title} className="relative pb-7 pl-6 last:pb-0">
-          <span className="absolute top-1.5 -left-[5px] h-[9px] w-[9px] border border-bone bg-ink" />
-          <p className="font-display text-xs tracking-[0.2em] text-ash">
-            <Txt>{e.period}</Txt>
-          </p>
-          <h3 className="mt-1 font-display text-lg tracking-wide">
-            <Txt>{e.title}</Txt>
-          </h3>
-          <p className="mb-2 text-sm text-ash">
-            <Txt>{e.place}</Txt>
-          </p>
-          {e.details.length > 0 && <SquareList items={e.details} />}
-        </li>
+        <Card
+          key={e.id}
+          id={e.id}
+          code={e.period.toUpperCase()}
+          title={e.title}
+          summary={`${e.place} — ${e.summary}`}
+          tags={e.skills}
+          desc={`${e.place} — ${e.summary}`}
+          onOpen={() => onOpen(e.id)}
+        />
       ))}
-    </ol>
+    </div>
   )
 }
 
-/** Skill rows; each proof is a button that jumps to the project in INTEL. */
-function SkillTable({ skills, onProof }: { skills: Skill[]; onProof: (id: string) => void }) {
+/** Skill rows; each proof button opens the project/experience that shows it. */
+function SkillTable({ skills, onOpen }: { skills: Skill[]; onOpen: (id: string) => void }) {
+  const { setDesc, blip } = useUi()
   return (
-    <div className="divide-y divide-line/60">
+    <div className="divide-y divide-line/70">
       {skills.map((s) => (
-        <div key={s.name} className="grid gap-2 py-3 sm:grid-cols-[9rem_1fr]">
-          <p className="font-display tracking-[0.12em]">{s.name}</p>
+        <div key={s.name} className="grid gap-2 py-3 sm:grid-cols-[10rem_minmax(0,1fr)]">
+          <p className="font-display tracking-[0.15em] uppercase">{s.name}</p>
           <div>
-            <p className="text-sm">{s.detail}</p>
-            {s.proofs.length > 0 && (
-              <p className="mt-1.5 flex flex-wrap items-center gap-2 font-display text-xs text-ash">
-                PREUVES :
-                {s.proofs.map((id) => {
-                  const p = projects.find((pr) => pr.id === id)
-                  return (
-                    p && (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => onProof(id)}
-                        className="border border-line px-1.5 text-bone hover:bg-bone hover:text-ink"
-                      >
-                        {p.code} ▸
-                      </button>
-                    )
+            <p className="text-sm leading-relaxed">{s.detail}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="label">Preuves :</span>
+              {s.proofs.map((id) => {
+                const p = findProof(id)
+                return (
+                  p && (
+                    <button
+                      key={id}
+                      type="button"
+                      onMouseEnter={() => setDesc(`Ouvrir la preuve : ${p.label}`)}
+                      onClick={() => {
+                        blip('select')
+                        onOpen(id)
+                      }}
+                      className="border border-line px-1.5 font-display text-[11px] tracking-wider text-beige uppercase hover:border-fg hover:bg-fg hover:text-bg"
+                    >
+                      {p.label} ▸
+                    </button>
                   )
-                })}
-              </p>
-            )}
+                )
+              })}
+            </div>
           </div>
         </div>
       ))}
@@ -75,61 +72,55 @@ function SkillTable({ skills, onProof }: { skills: Skill[]; onProof: (id: string
   )
 }
 
-/** LOGS — academic path, experience, skills, self-assessment, outlook. */
-export function Logs({ blip, onProof }: { blip: Blip; onProof: (projectId: string) => void }) {
-  const [sel, setSel] = useState(0)
+/** LOGS / EXPERIENCE */
+export function Logs({ tab, setTab, onOpen }: { tab: number; setTab: (i: number) => void; onOpen: (id: string) => void }) {
+  useListKeys(LOG_TABS.length, tab, setTab)
 
-  const entries = [
-    { key: 'edu', label: 'FORMATION' },
-    { key: 'exp', label: 'EXPÉRIENCE' },
-    { key: 'hard', label: 'HARD SKILLS' },
-    { key: 'soft', label: 'SOFT SKILLS' },
-    { key: 'self', label: 'BILAN' },
-    { key: 'next', label: 'PERSPECTIVES' },
+  const descs = [
+    'Parcours académique, du collège à l’EPITA.',
+    'Expériences professionnelles, responsabilités et activités.',
+    'Compétences techniques, reliées à leurs preuves.',
+    'Compétences transversales, reliées à leurs preuves.',
+    'Auto-évaluation : points forts et axes de progression.',
+    'Domaines d’intérêt et suite du parcours.',
   ]
 
   const panels = [
-    <Frame key="edu" label="Parcours académique">
-      <Timeline entries={education} />
-    </Frame>,
-    <Frame key="exp" label="Expériences professionnelles">
-      <Timeline entries={experience} />
-    </Frame>,
-    <div key="hard" className="space-y-5">
-      <Frame label="Compétences techniques">
-        <SkillTable skills={hardSkills} onProof={onProof} />
-      </Frame>
-      <Frame label="Méthodologie">
-        <SquareList items={methodSkills} />
-      </Frame>
-    </div>,
-    <Frame key="soft" label="Compétences transversales">
-      <SkillTable skills={softSkills} onProof={onProof} />
-    </Frame>,
-    <div key="self" className="grid gap-5 xl:grid-cols-2">
-      <Frame label="Points forts">
+    <CardGrid key="0" entries={education} onOpen={onOpen} />,
+    <CardGrid key="1" entries={experience} onOpen={onOpen} />,
+    <Window key="2" title="Hard skills" code="SKL_01">
+      <SkillTable skills={hardSkills} onOpen={onOpen} />
+    </Window>,
+    <Window key="3" title="Soft skills" code="SKL_02">
+      <SkillTable skills={softSkills} onOpen={onOpen} />
+    </Window>,
+    <div key="4" className="grid gap-5 xl:grid-cols-2">
+      <Window title="Points forts" code="EVAL_+">
         <SquareList items={selfAssessment.strengths} />
-      </Frame>
-      <Frame label="Axes d'amélioration">
+      </Window>
+      <Window title="Axes d'amélioration" code="EVAL_−">
         <SquareList items={selfAssessment.improvements} />
-      </Frame>
+      </Window>
     </div>,
-    <Frame key="next" label="Ouverture">
-      <p className="mb-2 font-display text-xs tracking-[0.2em] text-ash">DOMAINES D'INTÉRÊT</p>
+    <Window key="5" title="Perspectives" code="NEXT">
+      <Heading>Domaines d'intérêt</Heading>
       <SquareList items={outlook.interests} />
-      <p className="mt-5 mb-2 font-display text-xs tracking-[0.2em] text-ash">SUITE DU PARCOURS</p>
-      <p>
-        <Txt>{outlook.next}</Txt>
-      </p>
-    </Frame>,
+      <div className="mt-6">
+        <Heading>Suite du parcours</Heading>
+        <p className="leading-relaxed">{outlook.next}</p>
+      </div>
+    </Window>,
   ]
 
   return (
-    <section>
-      <SectionTitle title="LOGS" sub="Parcours // Compétences" />
-      <MenuDetail entries={entries} selected={sel} onSelect={setSel} blip={blip}>
-        {panels[sel]}
-      </MenuDetail>
-    </section>
+    <Split
+      list={LOG_TABS.map((t, i) => (
+        <Item key={t} label={t} meta={`0${i + 1}`} desc={descs[i]} selected={i === tab} onClick={() => setTab(i)} />
+      ))}
+    >
+      <div key={tab} className="boot-in">
+        {panels[tab]}
+      </div>
+    </Split>
   )
 }
