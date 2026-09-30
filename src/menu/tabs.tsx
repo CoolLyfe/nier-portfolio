@@ -58,10 +58,10 @@ function Summary({ over, title, text, tags }: { over: string; title: string; tex
   return (
     <div>
       <p className="label">{over}</p>
-      <p className="mt-1 font-display text-xl tracking-wide uppercase">{title}</p>
-      <p className="mt-3 leading-relaxed">{text}</p>
+      <p className="quest-title mt-1">{title}</p>
+      <p className="mt-2 pl-7 leading-relaxed">{text}</p>
       {tags && tags.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-1.5">
+        <div className="mt-4 flex flex-wrap gap-1.5 pl-7">
           {tags.slice(0, 4).map((t) => (
             <Tag key={t}>{t}</Tag>
           ))}
@@ -72,7 +72,7 @@ function Summary({ over, title, text, tags }: { over: string; title: string; tex
 }
 
 function ActionButton({ children, onClick, href }: { children: ReactNode; onClick?: () => void; href?: string }) {
-  const cls = 'row w-auto! border-line! bg-transparent!'
+  const cls = 'btn'
   return href ? (
     <a href={href} target="_blank" rel="noreferrer" className={cls}>
       <span className="bullet" />
@@ -109,9 +109,9 @@ export function entriesFor(tab: TabId, s: Settings): Entry[] {
           macro: (
             <div>
               <Summary over="Point de ralliement" title={identity.location} text={`${identity.status} — ${identity.unit}.`} />
-              <div className="mt-5 grid grid-cols-5 gap-px border border-line bg-line" aria-hidden>
+              <div className="well mt-5 grid grid-cols-5 gap-px p-px" aria-hidden>
                 {Array.from({ length: 25 }, (_, i) => (
-                  <span key={i} className={`aspect-square ${i === 12 ? 'bg-sel' : 'bg-panel'}`} />
+                  <span key={i} className={`aspect-[2/1] ${i === 12 ? 'bg-sel' : 'bg-item'}`} />
                 ))}
               </div>
             </div>
@@ -242,7 +242,7 @@ export function entriesFor(tab: TabId, s: Settings): Entry[] {
     case 'intel':
       return projects.map<Entry>((p, n) => ({
         id: p.id,
-        label: p.code,
+        label: p.title.split(' — ')[0],
         meta: `0${n + 1}`,
         desc: `${p.title} — ${p.period}`,
         title: `Archive 0${n + 1}`,
@@ -252,8 +252,8 @@ export function entriesFor(tab: TabId, s: Settings): Entry[] {
           <div>
             <Summary over={p.period} title={p.title} text={p.summary} tags={p.stack} />
             {p.image && (
-              <div className="mt-4 border border-line bg-[#e8e4d8] p-2">
-                <img src={p.image.src} alt="" className="mx-auto max-h-40 w-auto opacity-90" />
+              <div className="well mt-4 p-2">
+                <img src={p.image.src} alt="" className="mx-auto max-h-44 w-auto opacity-85 grayscale sepia-[.45]" />
               </div>
             )}
           </div>
@@ -271,7 +271,7 @@ export function entriesFor(tab: TabId, s: Settings): Entry[] {
           code: 'ID_01',
           macro: (
             <div>
-              <p className="font-display text-2xl tracking-[0.12em] uppercase">{identity.name}</p>
+              <p className="quest-title">{identity.name}</p>
               <dl className="mt-3 mb-4">
                 <Field k="Statut" v={identity.role} />
                 <Field k="Formation" v={identity.status} />
@@ -384,7 +384,7 @@ export function entriesFor(tab: TabId, s: Settings): Entry[] {
           title: 'Réglages',
           code: 'CFG',
           macro: (
-            <div className="divide-y divide-line/40">
+            <div className="divide-y divide-line/35">
               <Toggle label="Filtre CRT" on={s.crt} set={s.setCrt} />
               <Toggle label="Effets sonores" on={s.sound} set={s.setSound} />
             </div>
@@ -397,7 +397,7 @@ export function entriesFor(tab: TabId, s: Settings): Entry[] {
 function Toggle({ label, on, set }: { label: string; on: boolean; set: (v: boolean) => void }) {
   return (
     <div className="flex items-center justify-between py-3">
-      <span className="font-display tracking-[0.15em] uppercase">{label}</span>
+      <span>{label}</span>
       <span className="flex gap-1.5" role="radiogroup" aria-label={label}>
         {[true, false].map((v) => (
           <button
@@ -406,7 +406,7 @@ function Toggle({ label, on, set }: { label: string; on: boolean; set: (v: boole
             role="radio"
             aria-checked={on === v}
             onClick={() => set(v)}
-            className={`w-16 border border-line py-1 font-display text-xs tracking-[0.2em] ${on === v ? 'bg-sel text-on-sel' : ''}`}
+            className={`w-16 py-1 text-sm ${on === v ? 'bg-sel text-on-sel' : 'bg-item hover:bg-sel/40'}`}
           >
             {v ? 'ON' : 'OFF'}
           </button>

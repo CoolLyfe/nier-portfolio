@@ -65,10 +65,11 @@ Cinq archives chiffrées sont cachées dans `.blackbox/`.
 ```
 src/
 ├── data/profile.ts        contenu (seul fichier à modifier)
-├── index.css              palettes (menu / hacking), onglets, lignes, CRT
+├── index.css              palettes (menu / hacking), onglets, panneaux, lignes, CRT
 ├── App.tsx                onglets, deux colonnes, barre d'état, démarrage
 ├── hooks/useSettings.ts   préférences persistées et son synthétisé
-├── components/ui.tsx      Row (■ / ►), Window, Meter, raccourcis clavier
+├── components/ui.tsx      Row (■ + curseur pod), Window, Meter, raccourcis clavier
+├── components/icons.tsx   icônes des onglets, décor de fond
 ├── menu/
 │   ├── tabs.tsx           les 7 onglets et l'aperçu de chaque entrée
 │   ├── Breach.tsx         fenêtre → hacking → vue détaillée

@@ -17,8 +17,8 @@ import {
 
 function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="border-t border-line pt-4">
-      <p className="label mb-3">{title}</p>
+    <section>
+      <p className="panel-head mb-3 min-h-8! text-[0.9rem]">{title}</p>
       {children}
     </section>
   )
@@ -28,8 +28,8 @@ function Header({ over, title, sub }: { over: string; title: string; sub?: strin
   return (
     <header>
       <p className="label">{over}</p>
-      <h2 className="mt-1 font-display text-2xl tracking-wide uppercase sm:text-3xl">{title}</h2>
-      {sub && <p className="mt-1 text-dim">{sub}</p>}
+      <h2 className="quest-title mt-1 text-2xl! font-light sm:text-3xl!">{title}</h2>
+      {sub && <p className="mt-2 pl-8 text-dim">{sub}</p>}
     </header>
   )
 }
@@ -39,11 +39,11 @@ function ProjectDetail({ p }: { p: Project }) {
     <div className="space-y-6">
       <Header over={`INTEL // ${p.code} // ${p.period}`} title={p.title} />
 
-      <div className="grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {p.metrics.map((m) => (
-          <div key={m.k} className="bg-panel p-3">
+          <div key={m.k} className="bg-item px-3 py-2">
             <p className="label">{m.k}</p>
-            <p className="mt-1 font-display text-xl">{m.v}</p>
+            <p className="mt-0.5 text-xl">{m.v}</p>
           </div>
         ))}
       </div>
@@ -68,7 +68,7 @@ function ProjectDetail({ p }: { p: Project }) {
           <ul className="space-y-2.5">
             {p.architecture.map((a) => (
               <li key={a.name} className="grid grid-cols-[auto_1fr] gap-3 text-sm leading-relaxed">
-                <span className="font-display">► {a.name}</span>
+                <span className="font-medium">■ {a.name}</span>
                 <span>{a.role}</span>
               </li>
             ))}
@@ -82,8 +82,8 @@ function ProjectDetail({ p }: { p: Project }) {
       {p.image && (
         <Block title="Preuve // capture">
           <figure>
-            <div className="border border-line bg-[#e8e4d8] p-3">
-              <img src={p.image.src} alt={p.image.caption} className="mx-auto max-h-80 w-auto" />
+            <div className="well p-3">
+              <img src={p.image.src} alt={p.image.caption} className="mx-auto max-h-80 w-auto grayscale sepia-[.45]" />
             </div>
             <figcaption className="mt-2 text-sm text-dim">{p.image.caption}</figcaption>
           </figure>
@@ -111,7 +111,7 @@ function ProjectDetail({ p }: { p: Project }) {
         <Block title="Liens">
           <div className="flex flex-wrap gap-2">
             {p.links.map((l) => (
-              <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className="row w-auto! border-line!">
+              <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className="btn">
                 <span className="bullet" />
                 {l.label} ↗
               </a>
@@ -154,11 +154,11 @@ function SkillDetail({ s, kind, onJump }: { s: Skill; kind: string; onJump: (tab
             const p = findProof(id)
             return (
               p && (
-                <button key={id} type="button" onClick={() => onJump(p.tab, id)} className="row">
+                <button key={id} type="button" onClick={() => onJump(p.tab, id)} className="btn flex! w-full">
                   <span className="bullet" />
                   <span className="w-44 flex-none truncate max-sm:w-28">{p.label}</span>
-                  <span className="flex-1 truncate font-mono text-sm tracking-normal normal-case">{p.summary}</span>
-                  <span className="text-[11px]">{p.tab.toUpperCase()} ►</span>
+                  <span className="flex-1 truncate text-sm opacity-80">{p.summary}</span>
+                  <span className="text-[0.75rem]">{p.tab.toUpperCase()}</span>
                 </button>
               )
             )

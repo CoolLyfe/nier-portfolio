@@ -108,11 +108,11 @@ export function MacroWindow({
                 blip('select')
                 onBreach()
               }}
-              className="row mt-5 w-auto! border-line! bg-transparent!"
+              className="btn mt-6"
             >
               <span className="bullet" />
-              <span className="key mr-0!">A</span>
               Déchiffrer les données complètes
+              <span className="key ml-2">A</span>
             </button>
           )}
         </div>
@@ -161,7 +161,7 @@ export function DetailLayer({
       {id && (
         <div data-modal className="fixed inset-0 z-50 grid place-items-center p-3 sm:p-8">
           <motion.div
-            className="absolute inset-0 bg-ink/40"
+            className="absolute inset-0 bg-fg/35"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -177,17 +177,18 @@ export function DetailLayer({
             data-mode={flash ? 'hack' : undefined}
             className="window relative flex max-h-full w-full max-w-5xl flex-col overflow-hidden"
           >
-            <div className="flex items-center gap-3 bg-sel px-4 py-2 text-on-sel">
-              <span className="truncate font-display text-xs tracking-[0.2em]">■ DECRYPTED // {title}</span>
+            <div className="panel-head">
+              <span className="truncate">Decrypted -{title}</span>
               <button
                 type="button"
                 onClick={() => {
                   blip('back')
                   onClose()
                 }}
-                className="ml-auto font-display text-xs tracking-[0.2em] hover:underline"
+                className="ml-auto flex flex-none items-center text-[0.85rem] hover:opacity-70"
               >
-                [B] <span className="max-sm:hidden">FERMER </span>×
+                <span className="key bg-on-sel! text-sel!">B</span>
+                <span className="max-sm:hidden">Fermer</span>
               </button>
             </div>
             <motion.div

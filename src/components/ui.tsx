@@ -16,7 +16,7 @@ export const useUi = () => useContext(UiContext)
 /** True while a modal layer (hacking, detail, terminal) owns the keyboard. */
 export const modalOpen = () => document.querySelector('[data-modal]') !== null
 
-/** List row: ■ bullet, ► chevron and colour inversion when selected. */
+/** List row: ■ bullet, pod cursor and colour inversion when selected. */
 export function Row({
   label,
   meta,
@@ -66,9 +66,10 @@ export function Row({
       onAnimationEnd={() => setFlash(false)}
       className={`row ${flash ? 'flash' : ''}`}
     >
+      <span className="pod" aria-hidden />
       <span className="bullet" />
       <span className="flex-1 truncate">{label}</span>
-      {meta && <span className="text-[11px] tracking-wider opacity-70">{meta}</span>}
+      {meta && <span className="text-[0.8rem] opacity-75">{meta}</span>}
     </button>
   )
 }
@@ -98,7 +99,7 @@ export function useListKeys(count: number, sel: number, setSel: (i: number) => v
   }, [count, sel, setSel, onConfirm, blip])
 }
 
-/** Rectangular window with title strip. */
+/** Panel with the dark header strip. */
 export function Window({
   title,
   code,
@@ -120,17 +121,16 @@ export function Window({
 
 export function WindowHead({ title, code }: { title: string; code?: string }) {
   return (
-    <div className="flex items-center gap-2 border-b border-line bg-panel-2 px-4 py-1.5">
-      <span className="h-2 w-2 bg-fg" />
-      <span className="label text-fg!">{title}</span>
-      {code && <span className="label ml-auto">{code}</span>}
+    <div className="panel-head">
+      <span className="truncate">{title}</span>
+      {code && <span className="ml-auto flex-none text-[0.85rem]">{code}</span>}
     </div>
   )
 }
 
 export function Tag({ children }: { children: ReactNode }) {
   return (
-    <span className="border border-line px-2 py-0.5 font-display text-[11px] tracking-wider uppercase">{children}</span>
+    <span className="bg-item px-2 py-0.5 text-[0.78rem]">{children}</span>
   )
 }
 
@@ -139,7 +139,7 @@ export function SquareList({ items }: { items: string[] }) {
     <ul className="space-y-2">
       {items.map((it) => (
         <li key={it} className="flex gap-3 leading-relaxed">
-          <span className="mt-[0.6em] h-1.5 w-1.5 flex-none bg-fg" />
+          <span className="mt-[0.55em] h-2 w-2 flex-none bg-fg" />
           <span>{it}</span>
         </li>
       ))}
@@ -149,8 +149,8 @@ export function SquareList({ items }: { items: string[] }) {
 
 export function Field({ k, v }: { k: string; v: ReactNode }) {
   return (
-    <div className="grid grid-cols-[8rem_minmax(0,1fr)] gap-3 border-b border-line/40 py-2.5 last:border-0 max-sm:grid-cols-1 max-sm:gap-1">
-      <dt className="label pt-0.5">{k}</dt>
+    <div className="grid grid-cols-[8rem_minmax(0,1fr)] gap-3 border-b border-line/35 py-2 last:border-0 max-sm:grid-cols-1 max-sm:gap-1">
+      <dt className="label pt-0.5">{k}:</dt>
       <dd className="leading-relaxed">{v}</dd>
     </div>
   )
@@ -161,7 +161,7 @@ export function Meter({ value, max = 5 }: { value: number; max?: number }) {
   return (
     <span className="inline-flex gap-1" aria-label={`${value} sur ${max}`}>
       {Array.from({ length: max }, (_, i) => (
-        <span key={i} className={`h-3 w-6 border border-line ${i < value ? 'bg-fg' : ''}`} />
+        <span key={i} className={`h-3 w-6 ${i < value ? 'bg-fg' : 'bg-item'}`} />
       ))}
     </span>
   )

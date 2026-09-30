@@ -174,35 +174,6 @@ export const projects: Project[] = [
     softSkills: ['Rigueur', 'Autonomie', 'Persévérance'],
   },
   {
-    id: 'prog-c',
-    code: 'PROG_C',
-    title: 'Programmation C — séries de TP',
-    summary: 'Processus, structures de données, parsing.',
-    period: 'S2 – S3 (2026)',
-    context: 'Séries de TP EPITA, rendues sur la forge Git de l’école.',
-    objective: 'Maîtriser la programmation système et les structures de données fondamentales en C.',
-    stack: ['C', 'POSIX', 'Makefile', 'Git'],
-    architecture: [
-      { name: 'Animal Processing (S2)', role: 'Processus : fork, exec, wait, pipes, redirections (dup).' },
-      { name: 'The Nook Games (S2)', role: 'Arbres, parsing d’expressions, évaluation en notation polonaise inverse (piles, files).' },
-      { name: 'Porco’s New Mission (S3)', role: 'Structures et fichiers : carnet d’adresses, registre, planification de vols, tournoi.' },
-    ],
-    metrics: [
-      { k: 'Séries', v: '3' },
-      { k: 'Fichiers C', v: '37' },
-      { k: 'En-têtes', v: '22' },
-    ],
-    role: ['Implémentation individuelle de chaque exercice.'],
-    challenges: [
-      'Pipes doubles : fermer les bons descripteurs dans chaque processus pour éviter les blocages.',
-      'Évaluation d’expressions : conversion vers la notation polonaise inverse avant le calcul.',
-    ],
-    retrospective:
-      'Ces TP m’ont montré l’intérêt de découper un problème en petites fonctions testables avant d’écrire le programme principal.',
-    hardSkills: ['Programmation système', 'Structures de données', 'C'],
-    softSkills: ['Gestion du temps', 'Rigueur'],
-  },
-  {
     id: 'portfolio',
     code: 'PORTFOLIO',
     title: 'Ce portfolio — menu YoRHa',
@@ -365,11 +336,11 @@ export const experience: LogEntry[] = [
 /* LOGS — skills linked to their proofs */
 export const hardSkills: Skill[] = [
   { name: 'Python', detail: 'Jeu (pygame), traitement d’image, enseignement en tutorat.', proofs: ['myst', 'tutorat'] },
-  { name: 'C', detail: 'Pointeurs, mémoire, listes chaînées, processus et pipes.', proofs: ['minimake', 'prog-c'] },
+  { name: 'C', detail: 'Pointeurs, mémoire, listes chaînées, processus et pipes.', proofs: ['minimake'] },
   { name: 'OCaml', detail: 'Programmation fonctionnelle (cursus EPITA).', proofs: ['epita-1'] },
-  { name: 'Algorithmique', detail: 'Génération procédurale, arbres, piles/files, parsing.', proofs: ['myst', 'prog-c', 'minimake'] },
+  { name: 'Algorithmique', detail: 'Génération procédurale, arbres, piles/files, parsing.', proofs: ['myst', 'minimake'] },
   { name: 'Git', detail: 'Branches, fusions, forge EPITA et GitHub.', proofs: ['myst', 'minimake'] },
-  { name: 'Linux', detail: 'Poste quotidien sous Arch Linux, shell, compilation.', proofs: ['prog-c'] },
+  { name: 'Linux', detail: 'Poste quotidien sous Arch Linux, shell, compilation.', proofs: ['minimake', 'portfolio'] },
   { name: 'Web', detail: 'React, TypeScript, Tailwind CSS.', proofs: ['portfolio'] },
 ]
 

@@ -1,5 +1,6 @@
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Backdrop, TabIcon } from './components/icons'
 import { Row, UiContext, modalOpen, useListKeys } from './components/ui'
 import { identity, type TabId } from './data/profile'
 import { Terminal } from './hack/Terminal'
@@ -120,22 +121,19 @@ export default function App() {
       ? [['◄▲▼►', 'Déplacer'], ['AUTO', 'Tir'], ['B', 'Abandonner']]
       : phase === 'open'
         ? [['▲▼', 'Défiler'], ['B', 'Fermer']]
-        : [['◄ ►', 'Onglet'], ['▲ ▼', 'Sélection'], ['A', entry?.hackable ? 'Hacker' : 'Confirmer'], ['²', 'Terminal']]
+        : [['◄►', 'Onglet'], ['▲▼', 'Sélection'], ['A', entry?.hackable ? 'Hacker' : 'Confirmer'], ['²', 'Terminal']]
 
   return (
     <UiContext.Provider value={ui}>
       <AnimatePresence>{booting && <Boot onDone={endBoot} />}</AnimatePresence>
+      <Backdrop />
       {crt && <div className="crt" aria-hidden />}
 
       <LayoutGroup>
         <div className="flex min-h-dvh flex-col">
-          {/* ---- top: OS line + tab bar + ▼ rule + title ---- */}
-          <header className="px-4 pt-3 sm:px-10">
-            <div className="label flex justify-between gap-4">
-              <span>YoRHa // {identity.name}</span>
-              <span className="max-sm:hidden">{identity.unit}</span>
-            </div>
-            <nav ref={tabsRef} aria-label="Onglets" className="mt-3 flex overflow-x-auto border-b border-line pb-2 [scrollbar-width:none]">
+          {/* ---- top: tab bar + dotted rule + title ---- */}
+          <header className="pt-4 sm:pt-5">
+            <nav ref={tabsRef} aria-label="Onglets" className="tabbar px-4 sm:pl-[4.5vw] sm:pr-[3vw]">
               {TABS.map((t) => (
                 <button
                   key={t.id}
@@ -148,35 +146,44 @@ export default function App() {
                   }}
                   className="tab"
                 >
+                  <span className="pod" aria-hidden />
+                  <TabIcon id={t.id} />
                   {t.label}
                 </button>
               ))}
             </nav>
-            <div className="tri-rule mt-2" aria-hidden />
-            <div className="mt-5 flex items-end gap-4">
-              <h1 key={tab} className="boot-in font-display text-4xl leading-none tracking-[0.14em] sm:text-5xl">
+            <div className="dot-rule mt-[0.45rem]" aria-hidden />
+            <div className="mt-4 flex items-end gap-2 px-4 sm:px-[3vw]">
+              <h1 key={tab} className="boot-in page-title">
                 {tabDef.label}
+                <span className="page-sub">-{tabDef.sub}</span>
               </h1>
-              <p className="label mb-1">
-                {tabDef.label} — {tabDef.sub}
+              <p className="label mb-1 ml-auto max-sm:hidden">
+                {identity.name} // {identity.unit}
               </p>
             </div>
           </header>
 
-          {/* ---- two-column split ---- */}
-          <main className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 content-start gap-6 px-4 py-6 sm:px-10 md:grid-cols-[minmax(15rem,21rem)_minmax(0,1fr)] md:gap-10">
-            <div key={tab} role="listbox" aria-label={tabDef.label} className="boot-in space-y-1.5 md:pl-6">
-              {entries.map((e, i) => (
-                <Row
-                  key={e.id}
-                  label={e.label}
-                  meta={e.meta}
-                  desc={e.desc}
-                  selected={i === cur}
-                  onSelect={() => setCur(i)}
-                  onConfirm={() => confirm(i)}
-                />
-              ))}
+          {/* ---- list panel | detail window ---- */}
+          <main className="grid w-full flex-1 grid-cols-1 content-start gap-6 px-4 pt-7 pb-8 sm:px-[3vw] md:grid-cols-[minmax(16rem,29%)_minmax(0,1fr)] md:gap-[4.5vw] md:pl-[5vw]">
+            <div key={tab} className="boot-in panel self-start pb-3">
+              <span className="rail" aria-hidden />
+              <p className="panel-head">{tabDef.sub}</p>
+              <div className="panel-rule mb-2" aria-hidden />
+              <div role="listbox" aria-label={tabDef.label} className="space-y-1 pr-5 pl-2">
+                {entries.map((e, i) => (
+                  <Row
+                    key={e.id}
+                    label={e.label}
+                    meta={e.meta}
+                    desc={e.desc}
+                    selected={i === cur}
+                    onSelect={() => setCur(i)}
+                    onConfirm={() => confirm(i)}
+                  />
+                ))}
+              </div>
+              <span className="track" aria-hidden />
             </div>
 
             <div className="min-w-0">
@@ -197,22 +204,22 @@ export default function App() {
             </div>
           </main>
 
-          {/* ---- bottom status bar ---- */}
-          <footer className="sticky bottom-0 z-20 border-t border-line bg-bg/95 px-4 backdrop-blur-sm sm:px-10">
-            <div className="flex min-h-10 items-center gap-3 py-2">
-              <span className="h-2 w-2 flex-none bg-fg" />
-              <p key={desc} className="boot-in text-sm">
+          {/* ---- bottom help bar + dotted rule ---- */}
+          <footer className="sticky bottom-0 z-20 bg-bg/90 pt-2 pb-3 backdrop-blur-[2px]">
+            <div className="helpbar mx-4 flex-wrap sm:mx-[3vw]">
+              <p key={desc} className="boot-in mr-auto py-1 text-[0.95rem]">
                 {desc}
               </p>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 max-sm:hidden">
+                {hints.map(([k, v]) => (
+                  <span key={k} className="flex items-center text-[0.9rem]">
+                    <span className={`key ${k.length > 1 ? 'pill' : ''}`}>{k}</span>
+                    {v}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-line/40 py-2">
-              {hints.map(([k, v]) => (
-                <span key={k} className="label flex items-center text-fg!">
-                  <span className="key">{k}</span>
-                  {v}
-                </span>
-              ))}
-            </div>
+            <div className="dot-rule mt-3" aria-hidden />
           </footer>
         </div>
 
@@ -243,7 +250,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setTerminal('open')}
-              className="fixed right-4 bottom-28 z-40 border border-line bg-bg px-3 py-2 font-display text-xs tracking-[0.2em] text-accent hover:bg-sel hover:text-on-sel sm:right-10"
+              className="fixed right-4 bottom-28 z-40 border border-line bg-bg px-3 py-2 font-mono text-xs tracking-[0.2em] text-accent hover:bg-sel hover:text-on-sel sm:right-10"
             >
               &gt; TERMINAL_
             </button>
@@ -271,16 +278,17 @@ function Boot({ onDone }: { onDone: () => void }) {
 
   return (
     <motion.div className="fixed inset-0 z-[90] grid place-items-center bg-bg" exit={{ opacity: 0, transition: { duration: 0.25 } }} onClick={onDone}>
-      <div className="w-[min(30rem,88vw)] font-display tracking-[0.15em]">
+      <div className="w-[min(30rem,88vw)] tracking-[0.12em]">
         {steps.slice(0, n).map((s) => (
           <p key={s} className="boot-in py-0.5">
             {s}
           </p>
         ))}
-        <div className="mt-5 h-1.5 border border-line">
+        <div className="mt-5 h-2 bg-item">
           <div className="h-full bg-sel transition-[width] duration-200" style={{ width: `${(n / steps.length) * 100}%` }} />
         </div>
-        <p className="label mt-3">Cliquer ou appuyer sur une touche pour passer</p>
+        <div className="dot-rule mt-4" aria-hidden />
+        <p className="label mt-2">Cliquer ou appuyer sur une touche pour passer</p>
       </div>
     </motion.div>
   )

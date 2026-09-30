@@ -260,7 +260,7 @@ export function HackGame({ code, onDone }: { code: string; onDone: () => void })
 
       // HUD
       const pct = Math.round((1 - Math.max(0, core.hp) / MAX_HP) * 100)
-      ctx.font = '11px "Share Tech Mono", monospace'
+      ctx.font = '11px "JetBrains Mono", monospace'
       ctx.fillStyle = ORANGE
       ctx.fillText(`HACKING // TARGET: ${code}`, 12, 18)
       ctx.fillText(`BREACH ${String(pct).padStart(3)}%`, W - 96, 18)
@@ -268,7 +268,7 @@ export function HackGame({ code, onDone }: { code: string; onDone: () => void })
       ctx.strokeRect(12.5, 26.5, W - 25, 5)
       ctx.fillRect(13, 27, (W - 26) * (pct / 100), 4)
       if (state === 'boom') {
-        ctx.font = '16px "Share Tech Mono", monospace'
+        ctx.font = '16px "JetBrains Mono", monospace'
         ctx.fillStyle = BONE
         const msg = 'HACKING COMPLETE'
         ctx.fillText(msg, W / 2 - ctx.measureText(msg).width / 2, H / 2)

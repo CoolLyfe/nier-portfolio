@@ -231,14 +231,14 @@ export function Terminal({
       onClick={() => inputRef.current?.focus()}
     >
       <div className="win">
-        <div className="win-edge bevel">
-          <div className="win-body">
+        <div>
+          <div>
             <div className="flex items-center gap-3 bg-accent px-4 py-1.5 pl-6 text-bg">
-              <span className="font-display text-xs tracking-[0.2em]">■ TERMINAL // ROOT@YORHA</span>
-              <button type="button" onClick={onMinimize} className="ml-auto font-display text-xs tracking-[0.2em] hover:underline">
+              <span className="font-mono text-xs tracking-[0.2em]">■ TERMINAL // ROOT@YORHA</span>
+              <button type="button" onClick={onMinimize} className="ml-auto font-mono text-xs tracking-[0.2em] hover:underline">
                 RÉDUIRE _
               </button>
-              <button type="button" onClick={onExit} className="font-display text-xs tracking-[0.2em] hover:underline">
+              <button type="button" onClick={onExit} className="font-mono text-xs tracking-[0.2em] hover:underline">
                 EXIT ×
               </button>
             </div>
