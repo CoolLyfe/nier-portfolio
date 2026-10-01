@@ -1,70 +1,50 @@
 import { AnimatePresence, motion, type Transition } from 'framer-motion'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { WindowHead, useUi } from '../components/ui'
-import { HackGame } from './HackGame'
 
 /** Servo-like easing: fast start, hard stop. */
 export const MECH: Transition = { type: 'tween', ease: [0.76, 0, 0.18, 1], duration: 0.45 }
 
-export type Phase = 'idle' | 'hacking' | 'open'
+export type Phase = 'idle' | 'breach' | 'open'
 
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const BREACH_MS = 650
 
 /**
- * Right-column macro window. When `phase` is 'hacking' the same window
- * switches to the black/orange hacking palette and hosts the mini-game;
- * on completion the parent moves to 'open' and <DetailLayer> grows out
- * of this window (shared layoutId).
+ * Right-column fiche. Opening its dossier switches the same window to
+ * the black/orange hacking palette for a short decrypt, then the parent
+ * moves to 'open' and <DetailLayer> grows out of it (shared layoutId),
+ * still in hacking colours.
  */
 export function MacroWindow({
   id,
   title,
   code,
-  hackable,
+  detail,
   phase,
   onBreach,
-  onHacked,
-  onAbort,
+  onOpened,
   children,
 }: {
   id: string
   title: string
   code: string
-  hackable: boolean
+  detail: boolean
   phase: Phase
   onBreach: () => void
-  onHacked: () => void
-  onAbort: () => void
+  onOpened: () => void
   children: ReactNode
 }) {
   const { blip } = useUi()
-  const hacking = phase === 'hacking'
+  const breaching = phase === 'breach'
   const ref = useRef<HTMLDivElement>(null)
 
-  // bring the window on screen when the hack starts (stacked layout on mobile)
   useEffect(() => {
-    if (hacking) ref.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [hacking])
-
-  // B / Escape aborts the hack
-  useEffect(() => {
-    if (!hacking) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key.toLowerCase() === 'b') {
-        blip('back')
-        onAbort()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [hacking, onAbort, blip])
-
-  // reduced motion: skip the game, short decrypt only
-  useEffect(() => {
-    if (!hacking || !reduced()) return
-    const t = setTimeout(onHacked, 500)
+    if (!breaching) return
+    ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    const t = setTimeout(onOpened, reduced() ? 0 : BREACH_MS)
     return () => clearTimeout(t)
-  }, [hacking, onHacked])
+  }, [breaching, onOpened])
 
   return (
     <motion.div
@@ -72,46 +52,35 @@ export function MacroWindow({
       layout
       layoutId={`win-${id}`}
       transition={MECH}
-      data-mode={hacking ? 'hack' : undefined}
-      data-modal={hacking ? '' : undefined}
-      className={`window ${hacking ? 'glitch' : ''}`}
+      data-mode={breaching ? 'hack' : undefined}
+      data-modal={breaching ? '' : undefined}
+      className={`window flex h-full flex-col ${breaching ? 'glitch' : ''}`}
     >
-      <WindowHead title={hacking ? `HACKING // ${title}` : title} code={code} />
-      {hacking ? (
-        <div>
-          <div className="relative h-[min(58vh,26rem)] min-h-72">
-            {reduced() ? (
-              <p className="grid h-full place-items-center font-display tracking-[0.2em] text-accent">DÉCHIFFREMENT…</p>
-            ) : (
-              <HackGame code={code} onDone={onHacked} />
-            )}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-2">
-            <span className="label">Souris / doigt / flèches : déplacer — tir automatique</span>
-            <span className="flex gap-2">
-              <button type="button" onClick={onHacked} className="border border-line px-2 py-0.5 font-display text-xs tracking-[0.2em] hover:bg-sel hover:text-on-sel">
-                PASSER
-              </button>
-              <button type="button" onClick={onAbort} className="border border-line px-2 py-0.5 font-display text-xs tracking-[0.2em] hover:bg-sel hover:text-on-sel">
-                [B] ABANDONNER
-              </button>
-            </span>
+      <WindowHead title={breaching ? `HACKING // ${title}` : title} code={code} />
+      {breaching ? (
+        <div className="grid flex-1 place-items-center p-8">
+          <div className="w-[min(22rem,80%)]">
+            <p className="font-mono text-sm tracking-[0.2em] text-accent">DÉCHIFFREMENT // {code}</p>
+            <div className="mt-3 h-2 bg-item">
+              <div className="decrypt-bar h-full bg-sel" style={{ animationDuration: `${BREACH_MS}ms` }} />
+            </div>
           </div>
         </div>
       ) : (
-        <div key={id} className="boot-in p-4 sm:p-5">
+        <div key={id} className="boot-in flex flex-1 flex-col p-4 sm:p-5">
           {children}
-          {hackable && (
+          {detail && <div className="min-h-6 flex-1" />}
+          {detail && (
             <button
               type="button"
               onClick={() => {
                 blip('select')
                 onBreach()
               }}
-              className="btn mt-6"
+              className="btn self-start"
             >
               <span className="bullet" />
-              Déchiffrer les données complètes
+              Ouvrir le dossier complet
               <span className="key ml-2">A</span>
             </button>
           )}
@@ -121,7 +90,7 @@ export function MacroWindow({
   )
 }
 
-/** Full detail view, grown from the hacked window. */
+/** Full dossier, grown from the fiche, in the hacking palette. */
 export function DetailLayer({
   id,
   title,
@@ -134,12 +103,9 @@ export function DetailLayer({
   children: ReactNode
 }) {
   const { blip } = useUi()
-  const [flash, setFlash] = useState(true)
 
   useEffect(() => {
     if (!id) return
-    setFlash(true)
-    const t = setTimeout(() => setFlash(false), 420)
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).closest('input, textarea')) return
       if (e.key === 'Escape' || e.key.toLowerCase() === 'b') {
@@ -150,7 +116,6 @@ export function DetailLayer({
     window.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => {
-      clearTimeout(t)
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
@@ -159,9 +124,9 @@ export function DetailLayer({
   return (
     <AnimatePresence>
       {id && (
-        <div data-modal className="fixed inset-0 z-50 grid place-items-center p-3 sm:p-8">
+        <div data-modal data-mode="hack" className="fixed inset-0 z-50 grid place-items-center p-3 sm:p-8">
           <motion.div
-            className="absolute inset-0 bg-fg/35"
+            className="absolute inset-0 bg-black/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -173,9 +138,7 @@ export function DetailLayer({
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            // stays in hacking colours while it grows, then flips back
-            data-mode={flash ? 'hack' : undefined}
-            className="window relative flex max-h-full w-full max-w-5xl flex-col overflow-hidden"
+            className="window hack-scan relative flex max-h-full w-full max-w-5xl flex-col overflow-hidden"
           >
             <div className="panel-head">
               <span className="truncate">Decrypted -{title}</span>

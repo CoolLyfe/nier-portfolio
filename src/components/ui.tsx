@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useRef, useState, type ReactNode } from 'react'
+import { GlyphIcon, type Glyph } from './icons'
 
 /* ------------------------------------------------------------------
    Shared UI primitives for the NieR menu.
@@ -21,11 +22,13 @@ export function Row({
   label,
   meta,
   desc,
+  glyph,
   selected,
   onSelect,
   onConfirm,
 }: {
   label: string
+  glyph?: Glyph
   meta?: string
   desc?: string
   selected: boolean
@@ -67,36 +70,11 @@ export function Row({
       className={`row ${flash ? 'flash' : ''}`}
     >
       <span className="pod" aria-hidden />
-      <span className="bullet" />
+      {glyph ? <GlyphIcon name={glyph} className="glyph" /> : <span className="bullet" />}
       <span className="flex-1 truncate">{label}</span>
       {meta && <span className="text-[0.8rem] opacity-75">{meta}</span>}
     </button>
   )
-}
-
-/**
- * ↑/↓ move the cursor, Enter or A confirms.
- * Ignored while typing or while a modal layer is open.
- */
-export function useListKeys(count: number, sel: number, setSel: (i: number) => void, onConfirm?: (i: number) => void) {
-  const { blip } = useUi()
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, textarea') || modalOpen() || count === 0) return
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSel((sel + (e.key === 'ArrowDown' ? 1 : -1) + count) % count)
-        blip('move')
-      } else if ((e.key === 'Enter' || e.key.toLowerCase() === 'a') && onConfirm) {
-        if (e.key === 'Enter' && e.target instanceof HTMLButtonElement) return // native click handles it
-        e.preventDefault()
-        blip('select')
-        onConfirm(sel)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [count, sel, setSel, onConfirm, blip])
 }
 
 /** Panel with the dark header strip. */
@@ -157,11 +135,11 @@ export function Field({ k, v }: { k: string; v: ReactNode }) {
 }
 
 /** Segmented bar, like the game's settings sliders. */
-export function Meter({ value, max = 5 }: { value: number; max?: number }) {
+export function Meter({ value, max = 5, small }: { value: number; max?: number; small?: boolean }) {
   return (
-    <span className="inline-flex gap-1" aria-label={`${value} sur ${max}`}>
+    <span className="inline-flex gap-[3px]" role="img" aria-label={`${value} sur ${max}`}>
       {Array.from({ length: max }, (_, i) => (
-        <span key={i} className={`h-3 w-6 ${i < value ? 'bg-fg' : 'bg-item'}`} />
+        <span key={i} className={`${small ? 'h-2.5 w-2' : 'h-3 w-6'} ${i < value ? 'bg-fg' : 'bg-item'}`} />
       ))}
     </span>
   )

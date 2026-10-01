@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react'
 import { Field, SquareList, Tag } from '../components/ui'
+import { Tracks } from './tabs'
 import {
+  diplomas,
   education,
   experience,
   findProof,
   hardSkills,
+  music,
   projects,
   softSkills,
   type LogEntry,
@@ -13,7 +16,7 @@ import {
   type TabId,
 } from '../data/profile'
 
-/* Deep (post-hack) views. `renderDetail` resolves any hackable id. */
+/* Full dossiers (hacking palette). `renderDetail` resolves any entry with a detail. */
 
 function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -123,16 +126,50 @@ function ProjectDetail({ p }: { p: Project }) {
   )
 }
 
+const GROUP_LABEL: Record<LogEntry['group'], string> = {
+  school: 'MAP // SCOLARITÉ',
+  music: 'MAP // CONSERVATOIRE',
+  job: 'QUESTS // EMPLOI',
+  commitment: 'QUESTS // ENGAGEMENT',
+  stage: 'QUESTS // SCÈNE',
+}
+
 function LogDetail({ l }: { l: LogEntry }) {
-  const over = l.quest ? `QUESTS // ${l.quest === 'main' ? 'QUÊTE PRINCIPALE' : 'QUÊTE SECONDAIRE'}` : 'MAP // PARCOURS'
+  const quest = l.group === 'job' || l.group === 'commitment' || l.group === 'stage'
   return (
     <div className="space-y-6">
-      <Header over={`${over} // ${l.period}`} title={l.title} sub={l.place} />
-      <Block title={l.quest ? 'Objectifs de la quête' : 'Détails'}>
+      <Header over={`${GROUP_LABEL[l.group]} // ${l.period}`} title={l.title} sub={l.place} />
+      <Block title={quest ? 'Objectifs de la quête' : 'Détails'}>
         <SquareList items={l.details} />
       </Block>
+      {l.group === 'music' && (
+        <>
+          <Block title="Disciplines // durée de pratique">
+            <Tracks />
+          </Block>
+          <Block title={`Diplômes obtenus (${diplomas.filter((d) => d.group === 'music').length})`}>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {diplomas
+                .filter((d) => d.group === 'music')
+                .map((d) => (
+                  <div key={d.id} className="bg-item px-3 py-2">
+                    <p>{d.name}</p>
+                    <p className="label">{d.grade}</p>
+                  </div>
+                ))}
+            </div>
+          </Block>
+          <Block title="Ce que la musique m'a apporté">
+            <div className="flex flex-wrap gap-2">
+              {music.brought.map((b) => (
+                <Tag key={b}>{b}</Tag>
+              ))}
+            </div>
+          </Block>
+        </>
+      )}
       {l.skills.length > 0 && (
-        <Block title={l.quest ? 'Récompenses : compétences' : 'Compétences'}>
+        <Block title={quest ? 'Récompenses : compétences' : 'Compétences'}>
           <div className="flex flex-wrap gap-2">
             {l.skills.map((s) => (
               <Tag key={s}>{s}</Tag>
@@ -148,6 +185,13 @@ function SkillDetail({ s, kind, onJump }: { s: Skill; kind: string; onJump: (tab
   return (
     <div className="space-y-6">
       <Header over={kind} title={s.name} sub={s.detail} />
+      {s.facts && (
+        <dl>
+          {s.facts.map((f) => (
+            <Field key={f.k} k={f.k} v={f.v} />
+          ))}
+        </dl>
+      )}
       <Block title={`Preuves liées (${s.proofs.length})`}>
         <div className="space-y-2">
           {s.proofs.map((id) => {
@@ -185,7 +229,7 @@ export function renderDetail(id: string, onJump: (tab: TabId, id: string) => voi
   const l = [...education, ...experience].find((x) => x.id === id)
   if (l) return <LogDetail l={l} />
   const h = hardSkills.find((x) => `skill-${x.name}` === id)
-  if (h) return <SkillDetail s={h} kind="WEAPONS // HARD SKILL" onJump={onJump} />
+  if (h) return <SkillDetail s={h} kind={h.group === 'instrument' ? 'WEAPONS // INSTRUMENT' : 'WEAPONS // HARD SKILL'} onJump={onJump} />
   const s = softSkills.find((x) => `skill-${x.name}` === id)
   if (s) return <SkillDetail s={s} kind="SKILLS // SOFT SKILL" onJump={onJump} />
   return null

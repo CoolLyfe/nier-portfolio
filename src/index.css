@@ -390,6 +390,50 @@ body {
   }
 }
 
+/* category rows: line glyph in place of the ■ bullet */
+.row .glyph {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+}
+/* the column that does not own the arrows keeps a softer selection */
+.panel[data-focus='false'] .row[aria-selected='true']::before {
+  opacity: 0.55;
+  animation: none;
+}
+.panel[data-focus='false'] .row[aria-selected='true'] .pod {
+  visibility: hidden;
+}
+
+/* category strip (below the large layout) */
+.subtabs {
+  /* display comes from utilities so lg:hidden can win */
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subtab {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.45rem;
+  height: 2.1rem;
+  padding: 0 0.8rem 0 0.6rem;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  background: var(--item);
+  cursor: pointer;
+}
+.subtab .glyph {
+  width: 1rem;
+  height: 1rem;
+}
+.subtab[aria-selected='true'] {
+  background: var(--sel-bg);
+  color: var(--sel-fg);
+  box-shadow: 0.2rem 0.2rem 0 var(--shadow);
+}
+
 /* ---------- Menu bar button (MAP-style, standalone) ----------------- */
 .btn {
   position: relative;
@@ -466,6 +510,68 @@ body {
 .quest-title::before {
   content: '✥';
   font-size: 0.9em;
+}
+
+/* fiche preview: the weapon-viewer well */
+.visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  max-width: 12rem;
+  color: var(--beige);
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.07) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+.visual > svg:first-child {
+  opacity: 0.5;
+}
+.visual .corner {
+  position: absolute;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-color: var(--beige);
+}
+.visual .corner.tl {
+  top: 0.35rem;
+  left: 0.35rem;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.visual .corner.br {
+  right: 0.35rem;
+  bottom: 0.35rem;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+[data-mode='hack'] .visual {
+  color: var(--accent);
+}
+
+/* fiche stats: label left, value right, dotted leader rule */
+.stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0.1rem;
+  border-bottom: 1px dotted color-mix(in srgb, var(--fg) 45%, transparent);
+}
+.stat dt {
+  flex: none;
+  font-size: 0.82rem;
+  color: var(--dim);
+}
+.stat dd {
+  text-align: right;
+}
+
+/* fiche description box (bottom half of the game's item screen) */
+.desc-box {
+  padding: 0.8rem 1rem;
+  background: color-mix(in srgb, var(--item) 45%, transparent);
+  border-left: 0.3rem solid var(--fg);
 }
 
 /* image well */
@@ -573,6 +679,23 @@ body {
   100% {
     transform: none;
   }
+}
+
+/* short decrypt before a dossier opens */
+.decrypt-bar {
+  animation: decrypt linear forwards;
+}
+@keyframes decrypt {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+/* dossier: faint scanlines in the hacking palette */
+.hack-scan {
+  background-image: repeating-linear-gradient(to bottom, transparent 0 3px, rgb(255 106 43 / 0.035) 3px 4px);
 }
 
 @media (max-width: 767px) {

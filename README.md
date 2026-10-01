@@ -19,34 +19,37 @@ Les captures d'écran servant de preuves vont dans `public/evidence/`.
 
 ## Onglets
 
-| Onglet | Contenu |
+Chaque onglet est découpé en catégories, comme les menus WEAPONS et ITEMS du jeu : colonne des catégories, liste, puis fiche illustrée.
+
+| Onglet | Catégories |
 |---|---|
-| MAP | Parcours : EPITA, lycée, collège, position actuelle |
-| QUESTS | Quêtes principales (expériences) et secondaires (activités) |
-| ITEMS | Langues et centres d'intérêt |
-| WEAPONS | Hard skills, reliés à leurs preuves |
-| SKILLS | Soft skills, bilan, perspectives |
-| INTEL | Projets |
-| SYSTEM | Profil, motivation, contact, export du CV, terminal, réglages |
+| MAP | Position · Scolarité (EPITA, lycée, collège) · Conservatoire |
+| QUESTS | Emplois · Engagements (BDL, tutorat, EPImusic, club 3D) · Scène (concerts, orchestre, éloquence) |
+| ITEMS | Objets clés (bac, brevet, BIA, PIX, ASSR) · Diplômes musicaux · Langues · Loisirs |
+| WEAPONS | Programmation · Outils · Instruments (guitare, basse, batterie, FM, composition) |
+| SKILLS | Soft skills · Bilan · Perspectives |
+| INTEL | Projets de groupe · Projets individuels |
+| SYSTEM | Unité (sommaire, profil, motivation, objectifs, conclusion) · Transmission · Système |
+
+Le site s'ouvre sur SYSTEM › Sommaire : résumé, chiffres clés et accès rapide à chaque onglet.
 
 ## Navigation
 
 | Touche | Action |
 |---|---|
-| `←` `→` (ou `Q` / `E`, `1`–`7`) | Changer d'onglet |
-| `↑` `↓` | Déplacer la sélection |
-| `A` / `Entrée` | Confirmer : lance le hacking sur les fenêtres chiffrées |
-| `B` / `Échap` | Abandonner le hacking, fermer une fenêtre |
+| `Q` / `E`, `1`–`7` | Changer d'onglet |
+| `←` `→` | Passer de la colonne des catégories à la liste |
+| `↑` `↓` | Déplacer la sélection dans la colonne active |
+| `A` / `Entrée` | Entrer dans la catégorie, ouvrir le dossier complet |
+| `B` / `Échap` | Revenir aux catégories, fermer un dossier |
 | `²` ou `` ` `` | Terminal |
 
-Sur mobile, un premier tap sélectionne une ligne et un second la confirme.
+Sur mobile, les catégories deviennent une rangée d'onglets ; un premier tap sélectionne une ligne et un second la confirme.
 
-## Hacking
+## Dossiers
 
-Pour ouvrir le détail d'une fenêtre (projet, étape du parcours, quête, compétence), il faut la « hacker ».
-La fenêtre passe en noir et orange et affiche un mini-jeu : le vaisseau, piloté à la souris, au doigt ou aux flèches, tire automatiquement sur le noyau.
-Chaque projectile orange qui touche le vaisseau fait régénérer le noyau. Une fois le noyau détruit, la fenêtre s'agrandit et affiche le détail.
-Le bouton « Passer » permet de sauter le jeu. Si le système demande de réduire les animations, le jeu est remplacé par un court déchiffrement.
+Les fiches marquées « Ouvrir le dossier complet » (projets, parcours, quêtes, compétences) s'ouvrent avec `A`.
+La fiche passe brièvement en mode hacking (noir et orange, déchiffrement), puis s'agrandit en dossier détaillé, qui reste dans la palette du hacking.
 
 ## Terminal
 
@@ -57,7 +60,7 @@ Cinq archives chiffrées sont cachées dans `.blackbox/`.
 ## Liens directs
 
 - `#intel`, `#quests`… ouvrent un onglet.
-- `?open=myst` ouvre directement le détail d'une fenêtre, `?hack=myst` lance son hacking.
+- `?open=myst` ouvre directement le dossier d'une entrée, quel que soit son onglet (`?hack=` reste accepté).
 - `?skipboot` saute la séquence de démarrage.
 
 ## Structure
@@ -68,15 +71,22 @@ src/
 ├── index.css              palettes (menu / hacking), onglets, panneaux, lignes, CRT
 ├── App.tsx                onglets, deux colonnes, barre d'état, démarrage
 ├── hooks/useSettings.ts   préférences persistées et son synthétisé
-├── components/ui.tsx      Row (■ + curseur pod), Window, Meter, raccourcis clavier
-├── components/icons.tsx   icônes des onglets, décor de fond
+├── components/ui.tsx      Row (■ + curseur pod), Window, Meter
+├── components/icons.tsx   icônes des onglets, pictogrammes des fiches, décor de fond
 ├── menu/
-│   ├── tabs.tsx           les 7 onglets et l'aperçu de chaque entrée
-│   ├── Breach.tsx         fenêtre → hacking → vue détaillée
-│   ├── HackGame.tsx       mini-jeu de hacking (Canvas 2D)
+│   ├── tabs.tsx           les 7 onglets, leurs catégories et la fiche de chaque entrée
+│   ├── Breach.tsx         fiche → mode hacking → dossier détaillé
 │   └── details.tsx        vues détaillées (projet, quête, compétence)
 └── hack/                  terminal, système de fichiers virtuel, export du CV
 ```
+
+## À venir
+
+Contenus à ajouter quand les fichiers seront disponibles :
+
+- Lecteur audio (jukebox) façon NieR pour écouter des enregistrements : guitare, groupe EPImusic, compositions FL Studio.
+- Photos et vidéos de concerts (trio au musée de Bagnols-sur-Cèze, concerts de Noël, fête de la musique, orchestre).
+- Autres preuves « proof of concept » : captures, diplômes scannés, liens.
 
 ## Déploiement
 

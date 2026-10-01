@@ -47,8 +47,10 @@ export const FILES: VFile[] = [
     encrypted: true,
     content: () => [
       'ARCHIVE: MUSIC',
-      'Guitare au conservatoire : concerts, auditions et concours.',
-      'Composition musicale, et un groupe où j’ai appris à jouer — et à travailler — avec les autres.',
+      '14 ans de conservatoire à Bagnols-sur-Cèze. 5 diplômes.',
+      'Concert en trio à l’intérieur du musée de Bagnols-sur-Cèze, lors de la journée nationale des musées.',
+      'Aujourd’hui : la basse, parce que le groupe en avait besoin. On s’adapte.',
+      'Et des morceaux qui attendent dans FL Studio.',
     ],
   },
   {
