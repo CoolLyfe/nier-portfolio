@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, type Transition } from 'framer-motion'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { WindowHead, useUi } from '../components/ui'
+import { useLang } from '../i18n'
 
 /** Servo-like easing: fast start, hard stop. */
 export const MECH: Transition = { type: 'tween', ease: [0.76, 0, 0.18, 1], duration: 0.45 }
@@ -36,14 +37,15 @@ export function MacroWindow({
   children: ReactNode
 }) {
   const { blip } = useUi()
+  const { t } = useLang()
   const breaching = phase === 'breach'
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!breaching) return
     ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-    const t = setTimeout(onOpened, reduced() ? 0 : BREACH_MS)
-    return () => clearTimeout(t)
+    const timer = setTimeout(onOpened, reduced() ? 0 : BREACH_MS)
+    return () => clearTimeout(timer)
   }, [breaching, onOpened])
 
   return (
@@ -60,7 +62,7 @@ export function MacroWindow({
       {breaching ? (
         <div className="grid flex-1 place-items-center p-8">
           <div className="w-[min(22rem,80%)]">
-            <p className="font-mono text-sm tracking-[0.2em] text-accent">DÉCHIFFREMENT // {code}</p>
+            <p className="font-mono text-sm tracking-[0.2em] text-accent">{t('DÉCHIFFREMENT', 'DECRYPTING')} // {code}</p>
             <div className="mt-3 h-2 bg-item">
               <div className="decrypt-bar h-full bg-sel" style={{ animationDuration: `${BREACH_MS}ms` }} />
             </div>
@@ -80,7 +82,7 @@ export function MacroWindow({
               className="btn self-start"
             >
               <span className="bullet" />
-              Ouvrir le dossier complet
+              {t('Ouvrir le dossier complet', 'Open full file')}
               <span className="key ml-2">A</span>
             </button>
           )}
@@ -103,6 +105,7 @@ export function DetailLayer({
   children: ReactNode
 }) {
   const { blip } = useUi()
+  const { t } = useLang()
 
   useEffect(() => {
     if (!id) return
@@ -141,7 +144,7 @@ export function DetailLayer({
             className="window hack-scan relative flex max-h-full w-full max-w-5xl flex-col overflow-hidden"
           >
             <div className="panel-head">
-              <span className="truncate">Decrypted -{title}</span>
+              <span className="truncate">{t('Déchiffré', 'Decrypted')} -{title}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -151,7 +154,7 @@ export function DetailLayer({
                 className="ml-auto flex flex-none items-center text-[0.85rem] hover:opacity-70"
               >
                 <span className="key bg-on-sel! text-sel!">B</span>
-                <span className="max-sm:hidden">Fermer</span>
+                <span className="max-sm:hidden">{t('Fermer', 'Close')}</span>
               </button>
             </div>
             <motion.div

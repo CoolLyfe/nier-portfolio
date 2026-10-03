@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion'
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { projects, type TabId } from '../data/profile'
-import { TABS } from '../menu/tabs'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import type { TabId } from '../data/profile'
+import { useLang } from '../i18n'
+import { TAB_IDS } from '../menu/tabs'
 import { cvJson, cvMarkdown, download } from './cv'
-import { FILES, findFile } from './files'
+import { buildFiles, findFile } from './files'
 
 type Tone = 'out' | 'cmd' | 'ok' | 'err' | 'warn' | 'sys'
 interface Line {
@@ -43,10 +44,12 @@ export function Terminal({
   onMinimize: () => void
   onNavigate: (tab: TabId, openId?: string) => void
 }) {
+  const { P, S, t } = useLang()
+  const FILES = useMemo(() => buildFiles(P, t), [P, t])
   const [lines, setLines] = useState<Line[]>(() => [
     mk('YORHA_OS v11.4 — OVERRIDE ACCEPTED', 'ok'),
-    mk('Connexion établie avec l’unité LEYMONIE. Accès root temporaire.', 'sys'),
-    mk('Tapez `help` pour la liste des commandes.', 'sys'),
+    mk(t('Connexion établie avec l’unité LEYMONIE. Accès root temporaire.', 'Connected to unit LEYMONIE. Temporary root access.'), 'sys'),
+    mk(t('Tapez `help` pour la liste des commandes.', 'Type `help` for the list of commands.'), 'sys'),
     mk(''),
   ])
   const [input, setInput] = useState('')
@@ -85,7 +88,7 @@ export function Terminal({
         const next = new Set(cracked).add(path)
         setCracked(next)
         const total = FILES.filter((x) => x.encrypted).length
-        print(mk('ACCÈS ACCORDÉ.', 'ok'), mk(''), ...f.content().map((t) => mk(t)), mk(''), mk(`Archives déchiffrées : ${next.size}/${total}`, 'sys'))
+        print(mk(t('ACCÈS ACCORDÉ.', 'ACCESS GRANTED.'), 'ok'), mk(''), ...f.content().map((t) => mk(t)), mk(''), mk(`${t('Archives déchiffrées', 'Archives decrypted')} : ${next.size}/${total}`, 'sys'))
         setBusy(false)
       }
     }, 55)
@@ -101,7 +104,7 @@ export function Terminal({
       const { path, key } = challenge
       setChallenge(null)
       if (cmdLine.toUpperCase() === key) runCrack(path)
-      else print(mk('CLÉ INVALIDE. Contre-mesure déclenchée — réessayez `crack`.', 'err'))
+      else print(mk(t('CLÉ INVALIDE. Contre-mesure déclenchée — réessayez `crack`.', 'INVALID KEY. Countermeasure triggered — try `crack` again.'), 'err'))
       return
     }
 
@@ -112,19 +115,19 @@ export function Terminal({
 
     // easter eggs
     if (low === 'glory to mankind') return print(mk('Glory to mankind.', 'ok'))
-    if (low === '2b' || low === '9s' || low === 'a2') return print(mk('Unité non trouvée sur ce réseau. Seule l’unité LEYMONIE est en ligne.', 'warn'))
-    if (cmd === 'sudo') return print(mk('Vous êtes déjà root. Un peu de confiance, voyons.', 'warn'))
-    if (low.startsWith('rm ')) return print(mk('Suppression refusée : les données de l’unité sont protégées par la Bunker.', 'err'))
+    if (low === '2b' || low === '9s' || low === 'a2') return print(mk(t('Unité non trouvée sur ce réseau. Seule l’unité LEYMONIE est en ligne.', 'Unit not found on this network. Only unit LEYMONIE is online.'), 'warn'))
+    if (cmd === 'sudo') return print(mk(t('Vous êtes déjà root. Un peu de confiance, voyons.', 'You are already root. Have a little faith.'), 'warn'))
+    if (low.startsWith('rm ')) return print(mk(t('Suppression refusée : les données de l’unité sont protégées par le Bunker.', 'Deletion refused: the unit’s data is protected by the Bunker.'), 'err'))
 
     switch (cmd) {
       case 'help':
         return print(
-          mk('COMMANDES DISPONIBLES', 'sys'),
-          mk('  ls [-a]              lister les fichiers (-a : fichiers cachés)'),
-          mk('  cat <fichier>        afficher un fichier'),
-          mk('  crack <fichier>      déchiffrer une archive .enc'),
-          mk('  download cv [--json] exporter le CV structuré'),
-          mk('  open <onglet|projet> ouvrir dans l’interface (map, intel, system, myst…)'),
+          mk(t('COMMANDES DISPONIBLES', 'AVAILABLE COMMANDS'), 'sys'),
+          mk(t('  ls [-a]              lister les fichiers (-a : fichiers cachés)', '  ls [-a]              list files (-a: hidden files)')),
+          mk(t('  cat <fichier>        afficher un fichier', '  cat <file>           print a file')),
+          mk(t('  crack <fichier>      déchiffrer une archive .enc', '  crack <file>         decrypt a .enc archive')),
+          mk(t('  download cv [--json] exporter le CV structuré', '  download cv [--json] export the structured CV')),
+          mk(t('  open <onglet|projet> ouvrir dans l’interface (music, projects, myst…)', '  open <tab|project>   open in the interface (music, projects, myst…)')),
           mk('  whoami | history | clear | exit'),
         )
       case 'ls': {
@@ -132,57 +135,58 @@ export function Terminal({
         const shown = FILES.filter((f) => all || !f.hidden)
         print(
           ...shown.map((f) => {
-            const lock = f.encrypted ? (cracked.has(f.path) ? '  [DÉCHIFFRÉ]' : '  [CHIFFRÉ]') : ''
+            const lock = f.encrypted ? (cracked.has(f.path) ? t('  [DÉCHIFFRÉ]', '  [DECRYPTED]') : t('  [CHIFFRÉ]', '  [ENCRYPTED]')) : ''
             return mk(`  ${f.path}${lock}`, f.encrypted && !cracked.has(f.path) ? 'warn' : 'out')
           }),
           mk('  cv.md', 'out'),
         )
-        if (!all) print(mk('Anomalie : des fichiers cachés ont été détectés.', 'sys'))
+        if (!all) print(mk(t('Anomalie : des fichiers cachés ont été détectés.', 'Anomaly: hidden files detected.'), 'sys'))
         return
       }
       case 'cat': {
-        if (arg === 'cv.md') return print(...cvMarkdown().split('\n').map((t) => mk(t)))
-        const f = findFile(arg)
-        if (!f) return print(mk(`cat: ${arg || '?'}: fichier introuvable`, 'err'))
+        if (arg === 'cv.md') return print(...cvMarkdown(P, t).split('\n').map((t) => mk(t)))
+        const f = findFile(FILES, arg)
+        if (!f) return print(mk(`cat: ${arg || '?'}: ${t('fichier introuvable', 'no such file')}`, 'err'))
         if (f.encrypted && !cracked.has(f.path))
-          return print(mk(`${f.path}: ${hex(24)}${hex(24)}`, 'sys'), mk('Fichier chiffré. Utilisez `crack`.', 'warn'))
+          return print(mk(`${f.path}: ${hex(24)}${hex(24)}`, 'sys'), mk(t('Fichier chiffré. Utilisez `crack`.', 'Encrypted file. Use `crack`.'), 'warn'))
         return print(...f.content().map((t) => mk(t)))
       }
       case 'crack': {
-        const f = findFile(arg)
-        if (!f) return print(mk(`crack: ${arg || '?'}: cible introuvable`, 'err'))
-        if (!f.encrypted) return print(mk(`${f.path} n’est pas chiffré. Utilisez \`cat\`.`, 'warn'))
-        if (cracked.has(f.path)) return print(mk('Déjà déchiffré.', 'sys'))
+        const f = findFile(FILES, arg)
+        if (!f) return print(mk(`crack: ${arg || '?'}: ${t('cible introuvable', 'target not found')}`, 'err'))
+        if (!f.encrypted) return print(mk(`${f.path} ${t('n’est pas chiffré. Utilisez `cat`.', 'is not encrypted. Use `cat`.')}`, 'warn'))
+        if (cracked.has(f.path)) return print(mk(t('Déjà déchiffré.', 'Already decrypted.'), 'sys'))
         if (f.master) {
           const others = FILES.filter((x) => x.encrypted && !x.master)
           if (!others.every((x) => cracked.has(x.path)))
-            return print(mk('CLÉ MAÎTRE REQUISE. Déchiffrez d’abord toutes les autres archives de .blackbox/.', 'err'))
+            return print(mk(t('CLÉ MAÎTRE REQUISE. Déchiffrez d’abord toutes les autres archives de .blackbox/.', 'MASTER KEY REQUIRED. Decrypt every other archive in .blackbox/ first.'), 'err'))
         }
         const key = hex(4)
         setChallenge({ path: f.path, key })
-        return print(mk(`Pare-feu détecté sur ${f.path}.`, 'warn'), mk(`Recopiez la clé d’accès pour contourner : ${key}`, 'ok'))
+        return print(mk(`${t('Pare-feu détecté sur', 'Firewall detected on')} ${f.path}.`, 'warn'), mk(`${t('Recopiez la clé d’accès pour contourner', 'Type the access key to bypass it')} : ${key}`, 'ok'))
       }
       case 'download': {
         if (args[0] !== 'cv') return print(mk('usage: download cv [--json]', 'err'))
-        if (args.includes('--json')) download('Louis_Leymonie_CV.json', cvJson(), 'application/json')
-        else download('Louis_Leymonie_CV.md', cvMarkdown(), 'text/markdown')
-        return print(mk('Transfert terminé. CV exporté.', 'ok'))
+        if (args.includes('--json')) download('Louis_Leymonie_CV.json', cvJson(P), 'application/json')
+        else download('Louis_Leymonie_CV.md', cvMarkdown(P, t), 'text/markdown')
+        return print(mk(t('Transfert terminé. CV exporté.', 'Transfer complete. CV exported.'), 'ok'))
       }
       case 'open': {
-        const s = TABS.find((x) => x.id === arg.toLowerCase())
+        const a = arg.toLowerCase()
+        const s = S.tabs.find((x) => x.id === a || x.label.toLowerCase() === a)
         if (s) {
-          print(mk(`Ouverture de ${s.label}…`, 'ok'))
+          print(mk(`${t('Ouverture de', 'Opening')} ${s.label}…`, 'ok'))
           return onNavigate(s.id)
         }
-        const p = projects.find((x) => x.id === arg.toLowerCase() || x.code.toLowerCase() === arg.toLowerCase())
+        const p = P.projects.find((x) => x.id === a || x.code.toLowerCase() === a)
         if (p) {
-          print(mk(`Ouverture de l’archive ${p.code}…`, 'ok'))
-          return onNavigate('intel', p.id)
+          print(mk(`${t('Ouverture de l’archive', 'Opening archive')} ${p.code}…`, 'ok'))
+          return onNavigate('projects', p.id)
         }
-        return print(mk(`open: ${arg || '?'}: cible inconnue`, 'err'))
+        return print(mk(`open: ${arg || '?'}: ${t('cible inconnue', 'unknown target')}`, 'err'))
       }
       case 'whoami':
-        return print(mk('root — mais le vrai propriétaire de ce système est Louis Leymonie.'))
+        return print(mk(t('root — mais le vrai propriétaire de ce système est Louis Leymonie.', 'root — but the real owner of this system is Louis Leymonie.')))
       case 'history':
         return print(...history.map((h, i) => mk(`  ${String(history.length - i).padStart(3)}  ${h}`)))
       case 'clear':
@@ -190,7 +194,7 @@ export function Terminal({
       case 'exit':
         return onExit()
       default:
-        return print(mk(`${cmd}: commande inconnue. Tapez \`help\`.`, 'err'))
+        return print(mk(`${cmd}: ${t('commande inconnue. Tapez `help`.', 'unknown command. Type `help`.')}`, 'err'))
     }
   }
 
@@ -209,7 +213,7 @@ export function Terminal({
       e.preventDefault()
       const parts = input.split(' ')
       const last = parts.pop() ?? ''
-      const pool = parts.length === 0 ? COMMANDS : [...FILES.map((f) => f.path), 'cv', 'cv.md', ...TABS.map((s) => s.id)]
+      const pool = parts.length === 0 ? COMMANDS : [...FILES.map((f) => f.path), 'cv', 'cv.md', ...TAB_IDS]
       const hits = pool.filter((p) => p.startsWith(last))
       if (hits.length === 1) setInput([...parts, hits[0]].join(' '))
       else if (hits.length > 1) print(mk(hits.join('   '), 'sys'))
@@ -236,7 +240,7 @@ export function Terminal({
             <div className="flex items-center gap-3 bg-accent px-4 py-1.5 pl-6 text-bg">
               <span className="font-mono text-xs tracking-[0.2em]">■ TERMINAL // ROOT@YORHA</span>
               <button type="button" onClick={onMinimize} className="ml-auto font-mono text-xs tracking-[0.2em] hover:underline">
-                RÉDUIRE _
+                {t('RÉDUIRE', 'MINIMISE')} _
               </button>
               <button type="button" onClick={onExit} className="font-mono text-xs tracking-[0.2em] hover:underline">
                 EXIT ×
@@ -259,7 +263,7 @@ export function Terminal({
                   spellCheck={false}
                   autoCapitalize="off"
                   autoComplete="off"
-                  aria-label="Commande"
+                  aria-label={t('Commande', 'Command')}
                   className="min-w-0 flex-1 bg-transparent text-fg caret-[#ff6a2b] outline-none focus-visible:outline-none"
                 />
               </div>

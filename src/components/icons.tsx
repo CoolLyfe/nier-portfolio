@@ -2,21 +2,20 @@ import type { TabId } from '../data/profile'
 
 /* Tab glyphs, drawn on a 12×12 grid in the spirit of the game's icons. */
 const PATHS: Record<TabId, string> = {
+  // little house
+  home: 'M6 .4l5.6 5H10v6.2H7.3V8.2H4.7v3.4H2V5.4H.4z',
   // compass rose
-  map: 'M6 0l1.4 4.6L12 6l-4.6 1.4L6 12 4.6 7.4 0 6l4.6-1.4z',
-  // exclamation in a frame
-  quests: 'M1 1h10v10H1zM2.5 2.5v7h7v-7zM5.2 3.5h1.6v3.2H5.2zM5.2 7.6h1.6v1.4H5.2z',
-  // stacked pouch
-  items: 'M3 1h6v2H3zM2 4h8v3H2zM2 8h8v3H2z',
-  // sword, point up
-  weapons: 'M6 0l1.2 2v5.5H9V9H6.8v3H5.2V9H3V7.5h1.8V2z',
-  // circuit chip
-  skills: 'M3 3h6v6H3zM4.5 0h1v2h-1zM6.5 0h1v2h-1zM4.5 10h1v2h-1zM6.5 10h1v2h-1zM0 4.5h2v1H0zM0 6.5h2v1H0zM10 4.5h2v1h-2zM10 6.5h2v1h-2z',
+  path: 'M6 0l1.4 4.6L12 6l-4.6 1.4L6 12 4.6 7.4 0 6l4.6-1.4z',
   // chevron on a bar (data)
-  intel: 'M1 1h10v1.6H1zM1.5 4.2L6 9l4.5-4.8 1 1.1L6 11 .5 5.3z',
+  projects: 'M1 1h10v1.6H1zM1.5 4.2L6 9l4.5-4.8 1 1.1L6 11 .5 5.3z',
+  // beamed notes
+  music: 'M4 2.4L11 .8v8.4a1.9 1.9 0 1 1-1.4-1.8V3.4L5.4 4.3v6a1.9 1.9 0 1 1-1.4-1.8z',
+  // exclamation in a frame
+  commitments: 'M1 1h10v10H1zM2.5 2.5v7h7v-7zM5.2 3.5h1.6v3.2H5.2zM5.2 7.6h1.6v1.4H5.2z',
+  // heart
+  life: 'M6 11.2C2.5 8.6.5 6.6.5 4.2A2.9 2.9 0 0 1 6 2.8a2.9 2.9 0 0 1 5.5 1.4c0 2.4-2 4.4-5.5 7z',
   // power symbol
-  system:
-    'M5.2 0h1.6v5.5H5.2zM3.2 2.2l1 1.2A3.6 3.6 0 1 0 7.8 3.4l1-1.2A5.2 5.2 0 1 1 3.2 2.2z',
+  profile: 'M5.2 0h1.6v5.5H5.2zM3.2 2.2l1 1.2A3.6 3.6 0 1 0 7.8 3.4l1-1.2A5.2 5.2 0 1 1 3.2 2.2z',
 }
 
 export function TabIcon({ id }: { id: TabId }) {
@@ -66,6 +65,13 @@ const GLYPHS = {
   target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM12 11.5v1',
   grid: 'M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z',
   eye: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  home: 'M3 11l9-7 9 7M5 9.5V20h5v-6h4v6h5V9.5',
+  aikido: 'M12 2.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 6.5v5.5M6.5 9.5l5.5 2 5.5-2M12 12l-6 9h12z',
+  ball: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3.6 9.5c4.5 1.2 12.3 1.2 16.8 0M3.6 14.5c4.5-1.2 12.3-1.2 16.8 0M12 3c-3.2 4.5-3.2 13.5 0 18M12 3c3.2 4.5 3.2 13.5 0 18',
+  cake: 'M4 12h16v8H4zM4 15.5c2 1.4 4 1.4 6 0s4-1.4 6 0 3 1.2 4 0M8 12V9M12 12V9M16 12V9M8 6v.5M12 6v.5M16 6v.5',
+  camera: 'M3 7h4l2-3h6l2 3h4v12H3zM12 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+  disc: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM6.5 12A5.5 5.5 0 0 1 12 6.5',
+  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18',
 } as const
 
 export type Glyph = keyof typeof GLYPHS
@@ -96,26 +102,13 @@ export function Visual({ glyph }: { glyph: Glyph }) {
     <div className="visual well">
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" aria-hidden>
         <circle cx="50" cy="50" r="44" strokeWidth="0.4" />
-        <circle cx="50" cy="50" r="36" strokeWidth="0.4" strokeDasharray="1.5 2.5" />
+        <circle cx="50" cy="50" r="36" strokeWidth="0.4" strokeDasharray="1.5 2.5" className="spin-slow" />
+        <path d="M50 20a30 30 0 0 1 30 30" strokeWidth="0.9" className="spin-rev" />
         <path d="M50 2v8M50 90v8M2 50h8M90 50h8" strokeWidth="0.6" />
       </svg>
       <GlyphIcon name={glyph} className="relative h-[46%] w-[46%]" />
       <span className="corner tl" />
       <span className="corner br" />
-    </div>
-  )
-}
-
-/** Faint circles and diagonals behind the whole menu. */
-export function Backdrop() {
-  return (
-    <div className="backdrop" aria-hidden>
-      <svg className="h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor">
-        <circle cx="520" cy="430" r="360" />
-        <circle cx="520" cy="430" r="348" />
-        <circle cx="1240" cy="260" r="520" />
-        <path d="M0 120L1100 900M260 0L1600 820M900 0L0 640M1600 180L700 900" />
-      </svg>
     </div>
   )
 }

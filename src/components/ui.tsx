@@ -137,7 +137,7 @@ export function Field({ k, v }: { k: string; v: ReactNode }) {
 /** Segmented bar, like the game's settings sliders. */
 export function Meter({ value, max = 5, small }: { value: number; max?: number; small?: boolean }) {
   return (
-    <span className="inline-flex gap-[3px]" role="img" aria-label={`${value} sur ${max}`}>
+    <span className="inline-flex gap-[3px]" role="img" aria-label={`${value} / ${max}`}>
       {Array.from({ length: max }, (_, i) => (
         <span key={i} className={`${small ? 'h-2.5 w-2' : 'h-3 w-6'} ${i < value ? 'bg-fg' : 'bg-item'}`} />
       ))}
