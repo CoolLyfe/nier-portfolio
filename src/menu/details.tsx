@@ -57,21 +57,23 @@ function ProjectDetail({ p }: { p: Project }) {
         <Field k={t('Technologies', 'Stack')} v={<Tags items={p.stack} />} />
       </dl>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Block title="Architecture">
-          <ul className="space-y-2.5">
-            {p.architecture.map((a) => (
-              <li key={a.name} className="grid grid-cols-[auto_1fr] gap-3 text-sm leading-relaxed">
-                <span className="font-medium">■ {a.name}</span>
-                <span>{a.role}</span>
-              </li>
-            ))}
-          </ul>
-        </Block>
-        <Block title={t('Rôle personnel', 'My role')}>
-          <SquareList items={p.role} />
-        </Block>
-      </div>
+      {(p.architecture.length > 0 || p.role.length > 0) && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Block title="Architecture">
+            <ul className="space-y-2.5">
+              {p.architecture.map((a) => (
+                <li key={a.name} className="grid grid-cols-[auto_1fr] gap-3 text-sm leading-relaxed">
+                  <span className="font-medium">■ {a.name}</span>
+                  <span>{a.role}</span>
+                </li>
+              ))}
+            </ul>
+          </Block>
+          <Block title={t('Rôle personnel', 'My role')}>
+            <SquareList items={p.role} />
+          </Block>
+        </div>
+      )}
 
       {p.image && (
         <Block title={t('Preuve // capture', 'Proof // screenshot')}>
@@ -84,14 +86,18 @@ function ProjectDetail({ p }: { p: Project }) {
         </Block>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Block title={t('Difficultés surmontées', 'Challenges overcome')}>
-          <SquareList items={p.challenges} />
-        </Block>
-        <Block title={t('Retour d’expérience', 'Retrospective')}>
-          <p className="leading-relaxed">{p.retrospective}</p>
-        </Block>
-      </div>
+      {p.retrospective ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Block title={t('Difficultés surmontées', 'Challenges overcome')}>
+            <SquareList items={p.challenges} />
+          </Block>
+          <Block title={t('Retour d’expérience', 'Retrospective')}>
+            <p className="leading-relaxed">{p.retrospective}</p>
+          </Block>
+        </div>
+      ) : (
+        <p className="desc-box text-dim">{t('Projet en cours : le dossier sera complété à la fin du projet.', 'Project in progress: this file will be completed when it ends.')}</p>
+      )}
 
       <Block title={t('Compétences mobilisées', 'Skills used')}>
         <Tags items={[...p.hardSkills, ...p.softSkills]} />
@@ -120,12 +126,12 @@ const groupLabel = (g: LogEntry['group'], t: T) =>
     stage: t('MUSIQUE // SCÈNE', 'MUSIC // STAGE'),
     lead: t('ENGAGEMENTS // RESPONSABILITÉ', 'COMMITMENTS // RESPONSIBILITY'),
     job: t('ENGAGEMENTS // EMPLOI', 'COMMITMENTS // JOB'),
-    speech: t('ENGAGEMENTS // ÉLOQUENCE', 'COMMITMENTS // ELOQUENCE'),
+    contest: t('ENGAGEMENTS // CONCOURS', 'COMMITMENTS // CONTEST'),
   })[g]
 
 function LogDetail({ l }: { l: LogEntry }) {
   const { P, t } = useLang()
-  const quest = l.group === 'lead' || l.group === 'job' || l.group === 'speech'
+  const quest = l.group === 'lead' || l.group === 'job' || l.group === 'contest'
   const musicDiplomas = P.diplomas.filter((d) => d.group === 'music')
   return (
     <div className="space-y-6">

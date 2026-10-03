@@ -172,7 +172,7 @@ function Jukebox() {
   const tracks = [
     t('Guitare classique — enregistrement', 'Classical guitar — recording'),
     t('Groupe EPImusic — répétition', 'EPImusic band — rehearsal'),
-    t('Composition FL Studio — maquette', 'FL Studio composition — demo'),
+    t('Kawaii future bass — première composition', 'Kawaii future bass — first composition'),
   ]
   return (
     <div className="desc-box mt-5">
@@ -451,7 +451,7 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
       return [
         { id: 'lead', label: t('Responsabilités', 'Responsibilities'), glyph: 'flag', entries: by(P.experience, 'lead').map((x) => logEntry(x, t('Engagement', 'Commitment'))) },
         { id: 'job', label: t('Emplois', 'Jobs'), glyph: 'case', entries: by(P.experience, 'job').map((x) => logEntry(x, t('Emploi', 'Job'))) },
-        { id: 'speech', label: t('Prise de parole', 'Public speaking'), glyph: 'mic', entries: by(P.experience, 'speech').map((x) => logEntry(x, t('Éloquence', 'Eloquence'))) },
+        { id: 'contest', label: t('Concours', 'Contests'), glyph: 'star', entries: by(P.experience, 'contest').map((x) => logEntry(x, t('Concours', 'Contest'))) },
       ]
 
     case 'life': {

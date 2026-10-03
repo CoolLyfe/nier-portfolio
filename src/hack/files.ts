@@ -99,7 +99,7 @@ export function buildFiles(P: Profile, t: T): VFile[] {
       content: () => [
         t('ARCHIVE: OPERATOR — TOUTES LES DONNÉES RÉCUPÉRÉES', 'ARCHIVE: OPERATOR — ALL DATA RECOVERED'),
         '',
-        t('Vous avez tout déchiffré. Vous cherchez peut-être un stagiaire curieux et persévérant ?', 'You decrypted everything. Maybe you are looking for a curious, persistent intern?'),
+        t('Vous avez tout déchiffré. Curieux et persévérant : vous et l’unité avez ça en commun.', 'You decrypted everything. Curious and persistent: you and this unit have that in common.'),
         t('Tapez `download cv` puis `exit`, et rendez-vous dans PROFIL › Contact.', 'Type `download cv`, then `exit`, and head to PROFILE › Contact.'),
         '',
         'Glory to mankind.',

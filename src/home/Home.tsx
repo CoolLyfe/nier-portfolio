@@ -111,7 +111,7 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
       </Tile>
 
       {/* ---- contact ---- */}
-      <Tile area="ct" n={7} head={t('Transmission', 'Transmission')} code="COMMS" pod={t('Canal ouvert. Un stage ? Un groupe ? Une recette ? Tout est recevable.', 'Channel open. An internship? A band? A recipe? All accepted.')}>
+      <Tile area="ct" n={7} head={t('Transmission', 'Transmission')} code="COMMS" pod={t('Canal ouvert. Une question ? Un groupe ? Une recette ? Tout est recevable.', 'Channel open. A question? A band? A recipe? All accepted.')}>
         <div className="flex h-full flex-col gap-1">
           <a className="now-row" href={`mailto:${P.contact.email}`}>
             <span className="now-icon">

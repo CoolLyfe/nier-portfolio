@@ -21,11 +21,12 @@ export interface Project {
   context: string
   objective: string
   stack: string[]
+  /* empty lists / missing retrospective are simply not shown (project in progress) */
   architecture: { name: string; role: string }[]
   metrics: { k: string; v: string }[]
   role: string[]
   challenges: string[]
-  retrospective: string
+  retrospective?: string
   hardSkills: string[]
   softSkills: string[]
   links?: { label: string; href: string }[]
@@ -35,8 +36,8 @@ export interface Project {
 
 export interface LogEntry {
   id: string
-  /** PATH: school — MUSIC: music | stage — COMMITMENTS: lead | job | speech */
-  group: 'school' | 'music' | 'stage' | 'lead' | 'job' | 'speech'
+  /** PATH: school — MUSIC: music | stage — COMMITMENTS: lead | job | contest */
+  group: 'school' | 'music' | 'stage' | 'lead' | 'job' | 'contest'
   icon: Glyph
   /** short label when cited as a proof */
   short?: string
@@ -105,10 +106,10 @@ export function buildProfile(t: T) {
   const identity = {
     name: 'Louis Leymonie',
     unit: 'EPITA TOULOUSE // PROMO 2030',
-    role: t('Étudiant à l’EPITA, en recherche de stage', 'EPITA student, looking for an internship'),
+    role: t('Étudiant en informatique à l’EPITA', 'Computer science student at EPITA'),
     status: t('Classe préparatoire intégrée — 2e année (S3)', 'Integrated preparatory class — 2nd year (S3)'),
     location: 'Toulouse, France',
-    target: t('Stage — développement logiciel / intelligence artificielle', 'Internship — software development / artificial intelligence'),
+    target: t('Devenir ingénieur — spécialité encore ouverte', 'Becoming an engineer — field still open'),
     tagline: t(
       'Je code, je joue de la musique depuis quatorze ans, je fais de l’aïkido et de la pâtisserie. Ce menu rassemble tout ça.',
       'I write code, I have been playing music for fourteen years, I practise aikido and I bake. This menu gathers all of it.',
@@ -118,12 +119,12 @@ export function buildProfile(t: T) {
 
   const about = {
     profile: t(
-      'Étudiant en informatique à l’EPITA, je recherche un stage me permettant de mettre en pratique mes compétences en programmation. Sérieux et impliqué, j’ai acquis une bonne aisance à l’oral lors de tutorats et de présentations. J’apprécie le travail en équipe et l’apprentissage par l’expérience.',
-      'A computer science student at EPITA, I am looking for an internship where I can put my programming skills into practice. Serious and committed, I became comfortable speaking in public through tutoring and presentations. I enjoy teamwork and learning by doing.',
+      'Étudiant en informatique à l’EPITA, sérieux et impliqué. J’ai acquis une bonne aisance à l’oral en donnant des cours, en concours d’éloquence et sur scène. J’apprécie le travail en équipe, l’apprentissage par l’expérience, et par-dessus tout : créer des choses.',
+      'A computer science student at EPITA, serious and committed. I became comfortable speaking in public by teaching, in public speaking contests and on stage. I enjoy teamwork, learning by doing, and above all: making things.',
     ),
     motivation: t(
-      'Je souhaite orienter mon parcours vers le développement logiciel en intelligence artificielle. J’aime concevoir des outils concrets, capables d’apporter une réelle valeur ajoutée à leurs utilisateurs : analyser un besoin, construire l’outil, puis l’améliorer en continu.',
-      'I want to steer my path towards software development in artificial intelligence. I like building concrete tools that bring real value to their users: understanding a need, building the tool, then improving it continuously.',
+      'Je ne me suis pas encore fixé de spécialité, et je préfère explorer avant de choisir. Ce que je sais déjà : j’aime créer des choses concrètes de bout en bout (un jeu, un outil en C, ce menu) et comprendre comment fonctionne ma machine, jusqu’à ma configuration Arch Linux. Mon objectif : devenir ingénieur, et exercer un métier qui me plaît, dans un cadre calme.',
+      'I haven’t settled on a speciality yet, and I’d rather explore before choosing. What I already know: I like making concrete things from start to finish (a game, a C tool, this menu) and understanding how my machine works, down to my Arch Linux setup. My goal: become an engineer, and do a job I enjoy, somewhere calm.',
     ),
     beyond: t(
       'Mon parcours ne se limite pas au cadre académique. Quatorze ans de conservatoire et cinq diplômes de musique m’ont appris la rigueur, la volonté et la confiance en soi sur scène. Aujourd’hui président et bassiste d’un groupe du club EPImusic, et ancien co-président du bureau des lycéens, j’aime organiser des projets collectifs et prendre des responsabilités.',
@@ -136,17 +137,17 @@ export function buildProfile(t: T) {
       t('Disposer d’un outil évolutif, enrichi à chaque semestre.', 'Keep an evolving tool, updated every semester.'),
     ],
     conclusion: t(
-      'En un peu plus d’un an, je suis passé de l’écriture de programmes isolés en Python à la conception de systèmes complets en C, testés et construits en équipe. Ce portfolio est un point d’étape : il sera enrichi au fil de mes projets et de mon premier stage en entreprise.',
-      'In a little over a year, I went from writing standalone Python programs to designing complete C systems, tested and built as a team. This portfolio is a checkpoint: it will grow with my projects and my first internship.',
+      'En un peu plus d’un an, je suis passé de l’écriture de programmes isolés en Python à la conception de systèmes complets en C, testés et construits en équipe. Ce portfolio est un point d’étape : il sera enrichi au fil de mes projets.',
+      'In a little over a year, I went from writing standalone Python programs to designing complete C systems, tested and built as a team. This portfolio is a checkpoint: it will grow with my projects.',
     ),
   }
 
   /* HOME — the "right now" box */
   const now: { k: string; v: string; icon: Glyph; to: TabId }[] = [
     { k: t('Études', 'Studies'), v: t('EPITA, 2e année — semestre 3', 'EPITA, 2nd year — semester 3'), icon: 'school', to: 'path' },
-    { k: t('Projet', 'Project'), v: t('Ce portfolio, menu YoRHa', 'This portfolio, a YoRHa menu'), icon: 'folder', to: 'projects' },
+    { k: t('Projet', 'Project'), v: t('OCR en groupe : un réseau de neurones', 'Group OCR project: a neural network'), icon: 'folder', to: 'projects' },
     { k: t('Musique', 'Music'), v: t('Bassiste et président d’un groupe EPImusic', 'Bassist and president of an EPImusic band'), icon: 'bass', to: 'music' },
-    { k: t('Recherche', 'Seeking'), v: t('Stage en développement logiciel / IA', 'Software / AI development internship'), icon: 'target', to: 'profile' },
+    { k: t('À côté', 'On the side'), v: t('Peaufiner ma config Arch Linux', 'Polishing my Arch Linux setup'), icon: 'terminal', to: 'projects' },
   ]
 
   /* MUSIC — the conservatoire at a glance */
@@ -182,6 +183,7 @@ export function buildProfile(t: T) {
       ),
       facts: [
         { k: t('Pratique', 'Practice'), v: t('6 ans', '6 years') },
+        { k: t('Statut', 'Status'), v: t('Arrêté', 'Stopped') },
         { k: t('Retenu', 'Takeaway'), v: t('Calme, respect, maîtrise', 'Calm, respect, control') },
       ],
       pod: t('Analyse : l’unité sait tomber et se relever. Compétence utile en débogage.', 'Analysis: this unit knows how to fall and get back up. Useful when debugging.'),
@@ -192,11 +194,16 @@ export function buildProfile(t: T) {
       icon: 'ball',
       name: t('Hand-ball', 'Handball'),
       meta: t('4 ANS', '4 YRS'),
-      detail: t('Quatre ans de hand-ball en club : un sport d’équipe, rapide, où chacun a son poste.', 'Four years of club handball: a fast team sport where everyone has a position.'),
+      detail: t(
+        'Quatre ans de hand-ball : un sport d’équipe rapide, où chacun a son poste. Gaucher, je jouais ailier droit.',
+        'Four years of handball: a fast team sport where everyone has a position. Being left-handed, I played right wing.',
+      ),
       facts: [
         { k: t('Pratique', 'Practice'), v: t('4 ans', '4 years') },
+        { k: t('Poste', 'Position'), v: t('Ailier droit (gaucher)', 'Right wing (left-handed)') },
         { k: t('Retenu', 'Takeaway'), v: t('Esprit d’équipe', 'Team spirit') },
       ],
+      pod: t('Gaucher à l’aile droite : angle de tir optimal. Choix tactique validé.', 'Left-hander on the right wing: optimal shooting angle. Tactical choice approved.'),
     },
     {
       id: 'aero',
@@ -204,8 +211,14 @@ export function buildProfile(t: T) {
       icon: 'plane',
       name: t('Aéronautique', 'Aviation'),
       meta: 'BIA',
-      detail: t('Passionné d’aviation, j’ai passé le brevet d’initiation aéronautique en classe de seconde.', 'An aviation enthusiast, I earned the French aeronautics initiation certificate (BIA) in 10th grade.'),
-      facts: [{ k: t('Brevet', 'Certificate'), v: t('BIA, en seconde', 'BIA, in 10th grade') }],
+      detail: t(
+        'Passionné d’aviation, j’ai passé le brevet d’initiation aéronautique en classe de seconde, puis fait une séance de pilotage accompagné.',
+        'An aviation enthusiast, I earned the French aeronautics initiation certificate (BIA) in 10th grade, then flew a plane with an instructor.',
+      ),
+      facts: [
+        { k: t('Brevet', 'Certificate'), v: t('BIA, en seconde', 'BIA, in 10th grade') },
+        { k: t('En vol', 'In the air'), v: t('Séance de pilotage accompagné', 'A flight at the controls, with an instructor') },
+      ],
       pod: t('Observation : l’unité regarde souvent le ciel.', 'Observation: this unit often looks at the sky.'),
     },
     {
@@ -215,10 +228,13 @@ export function buildProfile(t: T) {
       name: t('Pâtisserie', 'Baking'),
       meta: '×∞',
       detail: t(
-        'Une recette, c’est un algorithme : des étapes précises, des quantités exactes, et on goûte avant de servir.',
-        'A recipe is an algorithm: precise steps, exact quantities, and you taste before serving.',
+        'En amateur, je teste un peu de tout. Une recette, c’est un algorithme : des étapes précises, des quantités exactes, et on goûte avant de servir.',
+        'As an amateur, I try a bit of everything. A recipe is an algorithm: precise steps, exact quantities, and you taste before serving.',
       ),
-      facts: [{ k: t('Qualités', 'Skills'), v: t('Précision, dosage, patience', 'Precision, measuring, patience') }],
+      facts: [
+        { k: t('Niveau', 'Level'), v: t('Amateur, curieux de tout', 'Amateur, curious about everything') },
+        { k: t('Qualités', 'Skills'), v: t('Précision, dosage, patience', 'Precision, measuring, patience') },
+      ],
       pod: t('Proposition : demander une démonstration. Dégustation recommandée.', 'Proposal: request a demonstration. Tasting recommended.'),
     },
     {
@@ -227,7 +243,11 @@ export function buildProfile(t: T) {
       icon: 'gamepad',
       name: t('Jeux vidéo', 'Video games'),
       meta: '2B',
-      detail: t('Les jeux vidéo, et NieR: Automata en particulier : c’est un peu la raison d’être de cette interface.', 'Video games, and NieR: Automata in particular: that’s more or less why this interface exists.'),
+      detail: t(
+        'Des jeux prenants, qui chacun à leur manière nous font réfléchir à ce qu’est l’humanité et à qui nous sommes. NieR: Automata le fait mieux que tous, et c’est pour ça que ce portfolio en reprend le menu.',
+        'Gripping games that each, in their own way, make us think about what humanity is and who we are. NieR: Automata does it best of all, which is why this portfolio borrows its menu.',
+      ),
+      facts: [{ k: t('Favoris', 'Favourites'), v: 'NieR: Automata, League of Legends, Minecraft, Five Nights at Freddy’s' }],
       pod: t('Requête : ne pas révéler la fin E.', 'Request: do not spoil ending E.'),
     },
   ]
@@ -485,6 +505,27 @@ export function buildProfile(t: T) {
       links: [{ label: t('Code source', 'Source code'), href: 'https://github.com/CoolLyfe/nier-portfolio' }],
       pod: t('Constat : vous êtes actuellement à l’intérieur de ce projet.', 'Note: you are currently inside this project.'),
     },
+    {
+      id: 'ocr',
+      code: 'OCR',
+      group: 'team',
+      title: t('OCR — reconnaissance de caractères', 'OCR — character recognition'),
+      summary: t('Lire le texte d’une image grâce à un réseau de neurones. En cours.', 'Reading text from an image with a neural network. In progress.'),
+      period: t('S3 — en cours', 'S3 — in progress'),
+      context: t('Projet de groupe EPITA du semestre 3, en cours de réalisation.', 'EPITA group project for semester 3, currently in progress.'),
+      objective: t('Reconnaître les caractères présents dans une image à l’aide d’un réseau de neurones.', 'Recognise the characters in an image using a neural network.'),
+      stack: [t('Réseau de neurones', 'Neural network'), t('Traitement d’image', 'Image processing'), 'Git'],
+      architecture: [],
+      metrics: [
+        { k: t('Statut', 'Status'), v: t('En cours', 'In progress') },
+        { k: t('Format', 'Format'), v: t('Groupe', 'Team') },
+      ],
+      role: [],
+      challenges: [],
+      hardSkills: [t('Réseaux de neurones', 'Neural networks'), t('Traitement d’image', 'Image processing')],
+      softSkills: [t('Travail en équipe', 'Teamwork')],
+      pod: t('Projet en cours. Le réseau de neurones apprend encore. L’unité aussi.', 'Project in progress. The neural network is still learning. So is this unit.'),
+    },
   ]
 
   /* PATH (school) and MUSIC (conservatoire) */
@@ -566,7 +607,7 @@ export function buildProfile(t: T) {
     },
   ]
 
-  /* MUSIC (stage) and COMMITMENTS (lead, job, speech) */
+  /* MUSIC (stage) and COMMITMENTS (lead, job, contest) */
   const experience: LogEntry[] = [
     {
       id: 'epimusic',
@@ -579,6 +620,7 @@ export function buildProfile(t: T) {
       summary: t('Président et bassiste d’un groupe du club musical de l’école.', 'President and bassist of a band in the school’s music club.'),
       details: [
         t('Président d’un groupe étudiant du club EPImusic, rattaché au BDE de l’EPITA.', 'President of a student band in the EPImusic club, part of EPITA’s student union.'),
+        t('Une dizaine de membres, dont 5 à 6 musiciens actifs. Répertoire : un peu de tout.', 'About ten members, 5 to 6 of them active musicians. Repertoire: a bit of everything.'),
         t('Bassiste : le groupe manquait de bassiste, et mon niveau de guitariste m’a permis de m’adapter à ses besoins.', 'Bassist: the band needed one, and my guitar level let me adapt to what it needed.'),
         t('Pratique toujours très régulière de la guitare, classique et électrique.', 'Still playing guitar very regularly, classical and electric.'),
       ],
@@ -625,8 +667,11 @@ export function buildProfile(t: T) {
       period: '2024 – 2025',
       title: t('Co-président du bureau des lycéens', 'Student council co-president'),
       place: t('Lycée', 'High school'),
-      summary: t('Organisation de projets et management d’équipe.', 'Organising projects and managing a team.'),
-      details: [t('Organisation de projets collectifs.', 'Organising group projects.'), t('Coordination et management d’une équipe d’élèves.', 'Coordinating and managing a team of students.')],
+      summary: t('Organisation des fêtes du lycée et management d’équipe.', 'Organising school parties and managing a team.'),
+      details: [
+        t('Organisation des fêtes de Noël et de fin d’année du lycée.', 'Organised the school’s Christmas and end-of-year parties.'),
+        t('Coordination et management d’une équipe d’élèves.', 'Coordinating and managing a team of students.'),
+      ],
       skills: [t('Leadership', 'Leadership'), t('Organisation', 'Organisation'), t('Travail en équipe', 'Teamwork')],
     },
     {
@@ -637,10 +682,11 @@ export function buildProfile(t: T) {
       period: '2024 – 2025',
       title: t('Responsable du tutorat en informatique', 'Head of computer science tutoring'),
       place: t('Lycée', 'High school'),
-      summary: t('Animation de séances de tutorat en Python.', 'Running Python tutoring sessions.'),
+      summary: t('Chaque semaine, initier des collégiens à Python.', 'Every week, teaching Python to middle schoolers.'),
       details: [
-        t('Animation de séances de tutorat en informatique et en Python.', 'Running tutoring sessions in computer science and Python.'),
-        t('Préparation et présentation de cours à d’autres élèves.', 'Preparing and presenting lessons to other students.'),
+        t('Une séance par semaine pendant mon année de terminale, pour des collégiens.', 'One session a week during my final year of high school, for middle schoolers.'),
+        t('Au programme : Python, petites interfaces graphiques avec Tkinter et projets simples.', 'On the menu: Python, small graphical interfaces with Tkinter and simple projects.'),
+        t('Préparer chaque séance et l’adapter à des débutants.', 'Preparing each session and adapting it to beginners.'),
       ],
       skills: [t('Pédagogie', 'Teaching'), t('Prise de parole', 'Public speaking'), 'Python'],
     },
@@ -681,15 +727,37 @@ export function buildProfile(t: T) {
     {
       id: 'eloquence',
       short: t('ÉLOQUENCE', 'ELOQUENCE'),
-      group: 'speech',
+      group: 'contest',
       icon: 'mic',
       period: '2023 – 2024',
       title: t('Concours d’éloquence', 'Public speaking contests'),
       place: t('Dont Lions Club', 'Including the Lions Club'),
       summary: t('5e sur 18 participants au concours du Lions Club.', '5th out of 18 at the Lions Club contest.'),
-      details: [t('Participation à plusieurs concours d’éloquence.', 'Took part in several public speaking contests.'), t('Lions Club : 5e sur 18 participants.', 'Lions Club: 5th out of 18.')],
+      details: [
+        t('Participation à plusieurs concours d’éloquence.', 'Took part in several public speaking contests.'),
+        t('Lions Club : 5e sur 18 participants.', 'Lions Club: 5th out of 18.'),
+        t(
+          'Sujet principal : une citation de Bernard Clavel, « Qui n’a jamais pétri et enfourné ne connaît point la valeur du pain ». Autre sujet : « Pourquoi ? ».',
+          'Main topic: a quote by Bernard Clavel, “Whoever has never kneaded and baked does not know the value of bread”. Another topic: “Why?”.',
+        ),
+      ],
       skills: [t('Prise de parole', 'Public speaking'), t('Argumentation', 'Argumentation')],
-      pod: t('Analyse : l’unité défend ses idées à voix haute. Volume vocal : adéquat.', 'Analysis: this unit defends its ideas out loud. Voice volume: adequate.'),
+      pod: t('Corrélation détectée : un discours sur le pain, une passion pour la pâtisserie.', 'Correlation detected: a speech about bread, a passion for baking.'),
+    },
+    {
+      id: 'hackathon',
+      short: 'HACKATHON',
+      group: 'contest',
+      icon: 'code',
+      period: t('Participation', 'Participation'),
+      title: 'Hackathon',
+      place: t('En équipe', 'As a team'),
+      summary: t('Concevoir et livrer un projet en équipe, en temps limité.', 'Designing and shipping a project as a team, against the clock.'),
+      details: [
+        t('Participation à un hackathon en équipe.', 'Took part in a hackathon as a team.'),
+        t('Travailler vite, à plusieurs, avec une échéance fixe.', 'Working fast, together, with a fixed deadline.'),
+      ],
+      skills: [t('Travail en équipe', 'Teamwork'), t('Gestion du temps', 'Time management')],
     },
   ]
 
@@ -697,10 +765,15 @@ export function buildProfile(t: T) {
   const hardSkills: Skill[] = [
     { id: 'skill-python', name: 'Python', group: 'code', icon: 'code', detail: t('Jeu (pygame), traitement d’image, enseignement en tutorat.', 'A game (pygame), image processing, teaching it as a tutor.'), proofs: ['myst', 'tutorat'] },
     { id: 'skill-c', name: 'C', group: 'code', icon: 'code', detail: t('Pointeurs, mémoire, listes chaînées, processus et pipes.', 'Pointers, memory, linked lists, processes and pipes.'), proofs: ['minimake'] },
-    { id: 'skill-ocaml', name: 'OCaml', group: 'code', icon: 'lambda', detail: t('Programmation fonctionnelle (cursus EPITA).', 'Functional programming (EPITA curriculum).'), proofs: ['epita-1'] },
+    { id: 'skill-ocaml', name: 'OCaml', group: 'code', icon: 'lambda', meta: t('BASES', 'BASICS'), detail: t('Bases de programmation fonctionnelle (cursus EPITA).', 'Functional programming basics (EPITA curriculum).'), proofs: ['epita-1'] },
     { id: 'skill-algo', name: t('Algorithmique', 'Algorithms'), group: 'code', icon: 'graph', detail: t('Génération procédurale, arbres, piles/files, parsing.', 'Procedural generation, trees, stacks/queues, parsing.'), proofs: ['myst', 'minimake'] },
     { id: 'skill-git', name: 'Git', group: 'tool', icon: 'branch', detail: t('Branches, fusions, forge EPITA et GitHub.', 'Branches, merges, EPITA forge and GitHub.'), proofs: ['myst', 'minimake'] },
-    { id: 'skill-linux', name: 'Linux', group: 'tool', icon: 'terminal', detail: t('Poste quotidien sous Arch Linux, shell, compilation.', 'Daily driver on Arch Linux, shell, compiling.'), proofs: ['minimake', 'portfolio'] },
+    { id: 'skill-linux', name: 'Linux', group: 'tool', icon: 'terminal', detail: t(
+        'Arch Linux au quotidien, que je personnalise sans cesse. Shell, compilation, et des scripts d’automatisation expérimentaux.',
+        'Arch Linux as my daily driver, which I keep customising. Shell, compiling, and experimental automation scripts.',
+      ),
+      proofs: ['minimake', 'portfolio'],
+    },
     { id: 'skill-web', name: 'Web', group: 'tool', icon: 'web', detail: t('React, TypeScript, Tailwind CSS.', 'React, TypeScript, Tailwind CSS.'), proofs: ['portfolio'] },
     {
       id: 'skill-guitar',
@@ -712,7 +785,7 @@ export function buildProfile(t: T) {
       facts: [
         { k: t('Pratique', 'Practice'), v: t('11 ans de conservatoire', '11 years at the conservatoire') },
         { k: t('Diplômes', 'Diplomas'), v: t('Cycles 1 et 2 — mention Très bien', 'Cycles 1 & 2 — Very good') },
-        { k: t('Styles', 'Styles'), v: t('Classique, électrique', 'Classical, electric') },
+        { k: t('Styles', 'Styles'), v: t('Classique, électrique : un peu de tout', 'Classical, electric: a bit of everything') },
         { k: t('Statut', 'Status'), v: t('En activité', 'Active') },
       ],
       proofs: ['conservatoire', 'concerts', 'epimusic'],
@@ -737,11 +810,14 @@ export function buildProfile(t: T) {
       group: 'instrument',
       icon: 'drums',
       meta: t('4 ANS', '4 YRS'),
-      detail: t('Quatre ans de batterie au conservatoire, premier cycle validé avec les félicitations.', 'Four years of drums at the conservatoire, first cycle passed with the jury’s congratulations.'),
+      detail: t(
+        'Quatre ans de batterie au conservatoire, premier cycle validé avec les félicitations. Arrêtée au lycée : en internat, je ne pouvais plus jouer en semaine.',
+        'Four years of drums at the conservatoire, first cycle passed with the jury’s congratulations. Stopped in high school: as a boarder, I couldn’t play during the week.',
+      ),
       facts: [
         { k: t('Pratique', 'Practice'), v: t('4 ans de conservatoire', '4 years at the conservatoire') },
         { k: t('Diplôme', 'Diploma'), v: t('Cycle 1 — Très bien, félicitations', 'Cycle 1 — Very good, with honours') },
-        { k: t('Statut', 'Status'), v: t('Arrêtée', 'Stopped') },
+        { k: t('Statut', 'Status'), v: t('Arrêtée (internat au lycée)', 'Stopped (boarding school)') },
       ],
       proofs: ['conservatoire'],
     },
@@ -767,9 +843,13 @@ export function buildProfile(t: T) {
       group: 'instrument',
       icon: 'wave',
       meta: t('MAO', 'DAW'),
-      detail: t('Composition sur FL Studio : la pratique s’acquiert, sur une base théorique solide héritée du conservatoire.', 'Composing in FL Studio: still learning the craft, on a solid theory base from the conservatoire.'),
+      detail: t(
+        'Composition sur FL Studio, en autodidacte : la technique du logiciel s’apprend, la théorie vient du conservatoire. Première composition complète : un morceau de kawaii future bass. J’ai aussi tenté d’écrire dans un style opéra.',
+        'Composing in FL Studio, self-taught: I’m learning the software, the theory comes from the conservatoire. First complete piece: a kawaii future bass track. I’ve also tried writing in an operatic style.',
+      ),
       facts: [
         { k: t('Outil', 'Tool'), v: 'FL Studio' },
+        { k: t('Styles', 'Styles'), v: t('Kawaii future bass, essais d’opéra', 'Kawaii future bass, opera attempts') },
         { k: t('Statut', 'Status'), v: t('En apprentissage', 'Learning') },
       ],
       proofs: ['conservatoire'],
@@ -799,20 +879,21 @@ export function buildProfile(t: T) {
       t('Documenter davantage mon code et écrire des messages de commit explicites.', 'Document my code more and write clearer commit messages.'),
       t('Planifier l’architecture avant de coder, surtout en équipe.', 'Plan the architecture before coding, especially in a team.'),
       t('Écrire mes propres tests plutôt que de dépendre de ceux fournis.', 'Write my own tests instead of relying on the provided ones.'),
-      t('Acquérir une première expérience en entreprise dans le développement.', 'Gain a first professional experience in software development.'),
+      t('Choisir une spécialité : explorer plusieurs domaines pour trouver celui qui me correspond.', 'Choose a speciality: explore several fields to find the one that suits me.'),
+      t('Acquérir une première expérience en entreprise.', 'Gain a first professional experience.'),
     ],
   }
 
   const outlook = {
     interests: [
-      t('Intelligence artificielle', 'Artificial intelligence'),
       t('Développement logiciel', 'Software development'),
-      t('Systèmes et bas niveau', 'Systems and low level'),
+      t('Systèmes, Linux et bas niveau', 'Systems, Linux and low level'),
       t('Développement de jeux', 'Game development'),
+      t('Outils et automatisation', 'Tools and automation'),
     ],
     next: t(
-      'Trouver un stage de développement logiciel orienté intelligence artificielle, puis poursuivre en cycle ingénieur à l’EPITA.',
-      'Find a software development internship focused on artificial intelligence, then continue into EPITA’s engineering cycle.',
+      'Poursuivre en cycle ingénieur à l’EPITA, explorer plusieurs domaines avant de choisir ma spécialité, et devenir ingénieur.',
+      'Continue into EPITA’s engineering cycle, explore several fields before choosing my speciality, and become an engineer.',
     ),
   }
 

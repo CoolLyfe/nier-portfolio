@@ -46,7 +46,7 @@ export function buildStrings(t: T) {
       id: 'commitments',
       label: t('ENGAGEMENTS', 'COMMITMENTS'),
       sub: t('Quêtes', 'Quests'),
-      desc: t('Responsabilités, emplois et prise de parole.', 'Responsibilities, jobs and public speaking.'),
+      desc: t('Responsabilités, emplois et concours.', 'Responsibilities, jobs and contests.'),
       pod: t('Quêtes accomplies. Récompenses : compétences.', 'Quests completed. Rewards: skills.'),
     },
     {
@@ -73,7 +73,7 @@ export function buildStrings(t: T) {
       t('Proposition : faire une pause. Le menu attendra.', 'Proposal: take a break. The menu will wait.'),
       t('Observation : vous lisez attentivement. L’unité Louis apprécie.', 'Observation: you are reading carefully. Unit Louis appreciates it.'),
       t('Rappel : le site existe aussi en français / anglais. Bouton en haut à droite.', 'Reminder: the site also exists in French / English. Button at the top right.'),
-      t('Requête : si un stage est disponible, utiliser le canal de contact.', 'Request: if an internship is available, use the contact channel.'),
+      t('Requête : pour toute question, utiliser le canal de contact.', 'Request: for any question, use the contact channel.'),
     ],
     breach: t('Déchiffrement en cours. Accès accordé.', 'Decrypting. Access granted.'),
     ambientOn: t('Ambiance sonore activée. Volume : discret.', 'Ambient sound on. Volume: discreet.'),
