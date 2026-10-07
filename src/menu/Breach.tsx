@@ -56,7 +56,7 @@ export function MacroWindow({
       transition={MECH}
       data-mode={breaching ? 'hack' : undefined}
       data-modal={breaching ? '' : undefined}
-      className={`window flex h-full flex-col ${breaching ? 'glitch' : ''}`}
+      className={`window fiche flex h-full flex-col ${breaching ? 'glitch' : ''}`}
     >
       <WindowHead title={breaching ? `HACKING // ${title}` : title} code={code} />
       {breaching ? (
@@ -69,7 +69,7 @@ export function MacroWindow({
           </div>
         </div>
       ) : (
-        <div key={id} className="boot-in flex flex-1 flex-col p-4 sm:p-5">
+        <div key={id} className="boot-in relative z-[1] flex flex-1 flex-col p-4 sm:p-6">
           {children}
           {detail && <div className="min-h-6 flex-1" />}
           {detail && (

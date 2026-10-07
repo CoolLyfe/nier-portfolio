@@ -1,20 +1,24 @@
-import { motion, useReducedMotion } from 'framer-motion'
-import type { ReactNode } from 'react'
 import { GlyphIcon, TabIcon } from '../components/icons'
-import { PhotoFrame } from '../components/Photo'
 import { usePod } from '../components/Pod'
+import { Figures, PhotoTile, Tile } from '../components/Tile'
 import { useUi } from '../components/ui'
 import type { Photo, TabId } from '../data/profile'
 import { useLang } from '../i18n'
+import { findProof } from '../menu/tabs'
 
 /* ------------------------------------------------------------------
    HOME: the first screen. A mosaic of boxes of different sizes: who I
-   am, what I'm doing right now, photos of what I love, and a way into
+   am and what I'm looking for, what sets me apart, featured projects,
+   what I'm doing right now, photos of what I love, and a way into
    every area. Box placement lives in index.css (.bento areas).
    ------------------------------------------------------------------ */
 
-export function Home({ go }: { go: (tab: TabId) => void }) {
+/** Entry ids that count as positions of responsibility. */
+const RESPONSIBILITIES = ['epimusic', 'bdl', 'tutorat']
+
+export function Home({ go, show }: { go: (tab: TabId) => void; show: (id: string) => void }) {
   const { P, S, t } = useLang()
+  const { say } = usePod()
   const photo = (id: string) => P.gallery.find((g) => g.id === id)!
   const counts: Partial<Record<TabId, string>> = {
     path: `${P.education.filter((e) => e.group === 'school').length} ${t('étapes', 'steps')}`,
@@ -25,11 +29,12 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
     profile: `${P.softSkills.length} skills`,
   }
   const figures: [string, string][] = [
-    [`${P.music.years}`, t('ans de musique', 'years of music')],
     [`${P.projects.length}`, t('projets documentés', 'documented projects')],
-    ['6', t('ans d’aïkido', 'years of aikido')],
-    [`${P.languages.length}`, t('langues', 'languages')],
+    [`${P.hardSkills.filter((s) => s.group !== 'instrument').length}`, t('langages et outils', 'languages and tools')],
+    [`${RESPONSIBILITIES.length}`, t('rôles à responsabilité', 'leadership roles')],
+    [`${P.music.years}`, t('ans de conservatoire', 'years at the conservatoire')],
   ]
+  const featured = P.featured.map((id) => P.projects.find((p) => p.id === id)!)
 
   return (
     <div className="bento">
@@ -42,13 +47,19 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
         pod={t('Unité Louis Leymonie. Statut : opérationnel. Humeur : curieuse.', 'Unit Louis Leymonie. Status: operational. Mood: curious.')}
         onClick={() => go('profile')}
       >
-        <div className="flex items-center gap-6 max-sm:flex-col max-sm:items-start">
+        <div className="flex items-center gap-8 max-sm:flex-col max-sm:items-start">
           <Portrait photo={photo('portrait')} />
           <div className="min-w-0 flex-1">
             <p className="label">{P.identity.unit}</p>
-            <h2 className="home-name mt-1">{P.identity.name}</h2>
-            <p className="mt-1 text-dim">{P.identity.role}</p>
-            <p className="mt-3 max-w-[38rem] leading-relaxed">{P.identity.tagline}</p>
+            <p className="greeting mt-3">{t('Bonjour, je suis', 'Hello, I’m')}</p>
+            <h2 className="home-name">{P.identity.name}</h2>
+            <p className="mt-1">{P.identity.role}</p>
+            <p className="mt-0.5 text-dim">{P.identity.headline}</p>
+            <p className="seeking mt-3">
+              <span className="live" aria-hidden />
+              {P.identity.seeking}
+            </p>
+            <p className="mt-3 max-w-[40rem] leading-relaxed">{P.identity.tagline}</p>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {P.identity.facets.map((f) => (
                 <span key={f} className="facet">
@@ -56,21 +67,28 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
                 </span>
               ))}
             </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button type="button" className="cta cta-main" onClick={() => window.print()}>
+                <GlyphIcon name="download" className="h-4 w-4" />
+                {t('CV (PDF)', 'Résumé (PDF)')}
+              </button>
+              <a className="cta" href={P.contact.github} target="_blank" rel="noreferrer">
+                <GlyphIcon name="branch" className="h-4 w-4" />
+                GitHub
+              </a>
+              <a className="cta" href={`mailto:${P.contact.email}`}>
+                <GlyphIcon name="mail" className="h-4 w-4" />
+                {t('Me contacter', 'Get in touch')}
+              </a>
+            </div>
           </div>
         </div>
-        <dl className="figures mt-5">
-          {figures.map(([v, k]) => (
-            <div key={k}>
-              <dd>{v}</dd>
-              <dt>{k}</dt>
-            </div>
-          ))}
-        </dl>
+        <Figures items={figures} className="mt-7" />
       </Tile>
 
       {/* ---- right now ---- */}
       <Tile area="now" n={1} head={t('En ce moment', 'Right now')} code={<span className="live">LIVE</span>} pod={t('Données en temps réel. Dernière synchronisation : aujourd’hui.', 'Live data. Last sync: today.')}>
-        <ul className="space-y-1">
+        <ul className="space-y-2.5">
           {P.now.map((x) => (
             <li key={x.k}>
               <button type="button" className="now-row" onClick={() => go(x.to)}>
@@ -85,20 +103,69 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
             </li>
           ))}
         </ul>
-        <p className="label mt-3 flex items-center gap-2">
-          <GlyphIcon name="pin" className="h-3.5 w-3.5" />
-          {P.identity.location}
-        </p>
+        <div className="welcome mt-6">
+          <p className="leading-relaxed">
+            {t('Bienvenue, et merci de passer par ici. Prenez votre temps : chaque case mène quelque part.', 'Welcome, and thanks for stopping by. Take your time: every box leads somewhere.')}
+          </p>
+          <p className="label mt-2 flex items-center gap-2">
+            <GlyphIcon name="pin" className="h-3.5 w-3.5" />
+            {P.identity.location}
+          </p>
+        </div>
+      </Tile>
+
+      {/* ---- what sets me apart ---- */}
+      <Tile area="as" n={2} head={t('Atouts', 'Strengths')} code="+α" pod={t('Analyse comparative : profil au-delà de la moyenne. Chaque atout est vérifiable.', 'Comparative analysis: above-average profile. Every strength can be checked.')}>
+        <ul className="strengths">
+          {P.strengths.map((x) => (
+            <li key={x.id}>
+              <span className="now-icon">
+                <GlyphIcon name={x.icon} className="h-[1.1rem] w-[1.1rem]" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-medium">{x.title}</p>
+                <p className="mt-0.5 text-[0.9rem] leading-snug text-dim">{x.text}</p>
+                <p className="mt-1.5 flex flex-wrap gap-1">
+                  {x.proofs.map((id) => (
+                    <button key={id} type="button" className="proof" onClick={() => show(id)}>
+                      {findProof(P, id)?.label ?? id}
+                    </button>
+                  ))}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Tile>
+
+      {/* ---- featured projects ---- */}
+      <Tile area="fp" n={3} head={t('Projets phares', 'Featured projects')} onClick={() => go('projects')} code={`${P.projects.length} ${t('au total', 'in total')}`}>
+        <ul className="space-y-1">
+          {featured.map((p) => (
+            <li key={p.id}>
+              <button type="button" className="now-row items-start!" onClick={() => show(p.id)} onPointerEnter={() => p.pod && say(p.pod)}>
+                <span className="project-code">{p.code}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block leading-snug">{p.summary}</span>
+                  <span className="label mt-1 block">
+                    {p.stack.slice(0, 3).join(' · ')} — {p.group === 'team' ? t('équipe', 'team') : t('solo', 'solo')}
+                  </span>
+                </span>
+                <span aria-hidden className="self-center opacity-70">→</span>
+              </button>
+            </li>
+          ))}
+        </ul>
       </Tile>
 
       {/* ---- photos ---- */}
-      <PhotoTile area="p1" n={2} photo={photo('stage')} onClick={() => go('music')} />
-      <PhotoTile area="p2" n={4} photo={photo('dojo')} onClick={() => go('life')} />
-      <PhotoTile area="p3" n={5} photo={photo('kitchen')} onClick={() => go('life')} />
-      <PhotoTile area="p4" n={6} photo={photo('games')} onClick={() => go('life')} />
+      <PhotoTile area="p1" n={4} photo={photo('stage')} onClick={() => go('music')} />
+      <PhotoTile area="p2" n={6} photo={photo('dojo')} onClick={() => go('life')} />
+      <PhotoTile area="p3" n={7} photo={photo('kitchen')} onClick={() => go('life')} />
+      <PhotoTile area="p4" n={8} photo={photo('games')} onClick={() => go('life')} />
 
       {/* ---- every area ---- */}
-      <Tile area="nav" n={3} head={t('Explorer', 'Explore')} code={`${S.tabs.length - 1} ${t('zones', 'areas')}`}>
+      <Tile area="nav" n={5} head={t('Explorer', 'Explore')} code={`${S.tabs.length - 1} ${t('zones', 'areas')}`}>
         <ul className="space-y-1">
           {S.tabs
             .filter((x) => x.id !== 'home')
@@ -111,7 +178,7 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
       </Tile>
 
       {/* ---- contact ---- */}
-      <Tile area="ct" n={7} head={t('Transmission', 'Transmission')} code="COMMS" pod={t('Canal ouvert. Une question ? Un groupe ? Une recette ? Tout est recevable.', 'Channel open. A question? A band? A recipe? All accepted.')}>
+      <Tile area="ct" n={9} head={t('Transmission', 'Transmission')} code="COMMS" pod={t('Canal ouvert. Une question ? Un groupe ? Une recette ? Tout est recevable.', 'Channel open. A question? A band? A recipe? All accepted.')}>
         <div className="flex h-full flex-col gap-1">
           <a className="now-row" href={`mailto:${P.contact.email}`}>
             <span className="now-icon">
@@ -128,89 +195,6 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
         </div>
       </Tile>
     </div>
-  )
-}
-
-/** Staggered soft entrance; skipped entirely when the visitor prefers reduced motion. */
-function useEnter(n: number) {
-  const still = useReducedMotion()
-  return {
-    initial: still ? false : { opacity: 0, y: 14 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, delay: 0.08 + n * 0.07, ease: [0.22, 1, 0.36, 1] as const },
-  }
-}
-
-/** A bento box: soft entrance, header strip, Pod comment on hover. */
-function Tile({
-  area,
-  n,
-  head,
-  code,
-  pod,
-  onClick,
-  children,
-}: {
-  area: string
-  n: number
-  head: string
-  code?: ReactNode
-  pod?: string
-  onClick?: () => void
-  children: ReactNode
-}) {
-  const { say } = usePod()
-  const { blip } = useUi()
-  const enter = useEnter(n)
-  return (
-    <motion.section
-      className="tile"
-      style={{ gridArea: area }}
-      {...enter}
-      onPointerEnter={() => say(pod)}
-    >
-      <header className="tile-head">
-        {onClick ? (
-          <button
-            type="button"
-            className="tile-link"
-            onClick={() => {
-              blip('select')
-              onClick()
-            }}
-          >
-            {head}
-            <span aria-hidden>→</span>
-          </button>
-        ) : (
-          <span>{head}</span>
-        )}
-        {code && <span className="ml-auto text-[0.75rem] opacity-80">{code}</span>}
-      </header>
-      <div className="tile-body">{children}</div>
-    </motion.section>
-  )
-}
-
-function PhotoTile({ area, n, photo, onClick }: { area: string; n: number; photo: Photo; onClick: () => void }) {
-  const { say } = usePod()
-  const { blip } = useUi()
-  const { t } = useLang()
-  const enter = useEnter(n)
-  return (
-    <motion.button
-      type="button"
-      className="tile tile-photo"
-      style={{ gridArea: area }}
-      {...enter}
-      onPointerEnter={() => say(photo.pod ?? (photo.src ? undefined : t('Archive visuelle en attente de transfert. L’unité doit encore fournir la photo.', 'Visual archive awaiting transfer. The unit still has to provide the picture.')))}
-      onClick={() => {
-        blip('select')
-        onClick()
-      }}
-    >
-      <PhotoFrame photo={photo} className="h-full w-full" />
-    </motion.button>
   )
 }
 

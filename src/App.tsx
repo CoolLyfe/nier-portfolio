@@ -1,6 +1,7 @@
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Backdrop } from './components/Backdrop'
+import { CvPrint } from './components/CvPrint'
 import { GlyphIcon, TabIcon } from './components/icons'
 import { PodProvider, usePod } from './components/Pod'
 import { Row, UiContext, modalOpen } from './components/ui'
@@ -13,6 +14,7 @@ import { useAmbient } from './hooks/useAmbient'
 import { useBlip, usePersistentFlag } from './hooks/useSettings'
 import { LangContext, initialLang, useLang } from './i18n'
 import { DetailLayer, MacroWindow, type Phase } from './menu/Breach'
+import { AsideTiles } from './menu/aside'
 import { detailTitle, renderDetail } from './menu/details'
 import { NO_ACTIONS, TAB_IDS, categoriesFor, locate, tabDef, type Actions } from './menu/tabs'
 
@@ -200,6 +202,12 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
     }
   }
 
+  // From the home page: show an entry, opening its dossier when it has one.
+  const show = (id: string) => {
+    const at = locate(id)
+    if (at) jump(at.tab, id, !!categoriesFor(at.tab, P, t, NO_ACTIONS)[at.c].entries[at.i].detail)
+  }
+
   const endBoot = useCallback(() => {
     setBooting(false)
     try {
@@ -235,6 +243,7 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
 
   return (
     <UiContext.Provider value={ui}>
+      <CvPrint />
       <AnimatePresence>{booting && <Boot onDone={endBoot} />}</AnimatePresence>
       <Backdrop />
       {crt && <div className="crt" aria-hidden />}
@@ -274,13 +283,13 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
 
           {isHome ? (
             <main className="w-full flex-1 px-4 pt-6 pb-8 sm:px-[3vw] xl:pl-[4.5vw]">
-              <Home go={go} />
+              <Home go={go} show={show} />
             </main>
           ) : (
-            /* ---- categories | list | fiche ---- */
-            <main className="grid w-full flex-1 grid-cols-1 content-start gap-5 px-4 pt-6 pb-6 sm:px-[3vw] md:grid-cols-[minmax(15rem,34%)_minmax(0,1fr)] xl:grid-cols-[minmax(12rem,17%)_minmax(15rem,24%)_minmax(0,1fr)] xl:grid-rows-[1fr] xl:content-stretch xl:gap-[2.6vw] xl:pl-[4.5vw]">
+            /* ---- categories | list | fiche, soft tiles under the first two (menu/aside.tsx) ---- */
+            <main className="menu-grid w-full flex-1 px-4 pt-6 pb-6 sm:px-[3vw] xl:pl-[4.5vw]">
               {/* categories: vertical panel on large screens, strip below */}
-              <div key={`${tab}-cats`} className="soft-in panel max-xl:hidden" data-focus={focus === 'cat'}>
+              <div key={`${tab}-cats`} className="soft-in panel max-xl:hidden" style={{ gridArea: 'cats' }} data-focus={focus === 'cat'}>
                 <span className="rail" aria-hidden />
                 <p className="panel-head">{def.sub}</p>
                 <div className="panel-rule mb-2" aria-hidden />
@@ -302,7 +311,7 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
                 </div>
                 <span className="track" aria-hidden />
               </div>
-              <div role="tablist" aria-label={def.label} className="subtabs flex md:col-span-2 xl:hidden">
+              <div role="tablist" aria-label={def.label} className="subtabs flex xl:hidden" style={{ gridArea: 'sub' }}>
                 {cats.map((k, n) => (
                   <button
                     key={k.id}
@@ -321,7 +330,7 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
                 ))}
               </div>
 
-              <div key={`${tab}-${c}`} className="soft-in panel self-start pb-3 xl:self-stretch" data-focus={focus === 'list'}>
+              <div key={`${tab}-${c}`} className="soft-in panel pb-3" style={{ gridArea: 'list' }} data-focus={focus === 'list'}>
                 <span className="rail" aria-hidden />
                 <p className="panel-head">{cat.label}</p>
                 <div className="panel-rule mb-2" aria-hidden />
@@ -344,7 +353,7 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
                 <span className="track" aria-hidden />
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0" style={{ gridArea: 'fiche' }}>
                 {entry && (
                   <MacroWindow
                     id={entry.id}
@@ -359,6 +368,8 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
                   </MacroWindow>
                 )}
               </div>
+
+              <AsideTiles tab={tab} show={show} />
             </main>
           )}
 

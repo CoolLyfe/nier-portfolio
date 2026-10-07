@@ -663,10 +663,10 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
               id: 'export',
               label: t('Exporter le CV', 'Export the CV'),
               meta: 'DATA',
-              desc: t('Télécharger une version structurée du CV.', 'Download a structured version of the CV.'),
+              desc: t('Télécharger le CV : PDF d’une page, ou version structurée.', 'Download the CV: a one-page PDF, or a structured version.'),
               title: 'Export',
               code: 'DATA',
-              onConfirm: () => download('Louis_Leymonie_CV.md', cvMarkdown(P, t), 'text/markdown'),
+              onConfirm: () => window.print(),
               macro: (
                 <Card
                   glyph="download"
@@ -675,6 +675,7 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
                   text={t('Version structurée du CV, générée à partir des données de ce portfolio, dans la langue affichée.', 'A structured version of the CV, generated from this portfolio’s data, in the current language.')}
                 >
                   <div className="mt-5 flex flex-wrap gap-2">
+                    <ActionButton onClick={() => window.print()}>{t('PDF (une page)', 'PDF (one page)')}</ActionButton>
                     <ActionButton onClick={() => download('Louis_Leymonie_CV.md', cvMarkdown(P, t), 'text/markdown')}>Markdown (.md)</ActionButton>
                     <ActionButton onClick={() => download('Louis_Leymonie_CV.json', cvJson(P), 'application/json')}>JSON (.json)</ActionButton>
                   </div>

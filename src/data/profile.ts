@@ -106,15 +106,18 @@ export function buildProfile(t: T) {
   const identity = {
     name: 'Louis Leymonie',
     unit: 'EPITA TOULOUSE // PROMO 2030',
-    role: t('Étudiant en informatique à l’EPITA', 'Computer science student at EPITA'),
+    role: t('Étudiant ingénieur en informatique — EPITA', 'Computer engineering student — EPITA'),
+    headline: t('Développement logiciel & systèmes : C, Python, Linux, web', 'Software & systems development: C, Python, Linux, web'),
     status: t('Classe préparatoire intégrée — 2e année (S3)', 'Integrated preparatory class — 2nd year (S3)'),
     location: 'Toulouse, France',
     target: t('Devenir ingénieur — spécialité encore ouverte', 'Becoming an engineer — field still open'),
     tagline: t(
-      'Je code, je joue de la musique depuis quatorze ans, je fais de l’aïkido et de la pâtisserie. Ce menu rassemble tout ça.',
-      'I write code, I have been playing music for fourteen years, I practise aikido and I bake. This menu gathers all of it.',
+      'J’aime construire des outils de bout en bout et comprendre ce qui se passe sous le capot. À côté du code : 14 ans de conservatoire, la présidence d’un groupe étudiant et des années à enseigner et à prendre la parole en public.',
+      'I like building tools end to end and understanding what happens under the hood. Beyond code: 14 years at the conservatoire, running a student band, and years of teaching and public speaking.',
     ),
-    facets: [t('Code', 'Code'), t('Musique', 'Music'), t('Scène', 'Stage'), t('Sport', 'Sport'), t('Engagement', 'Commitment')],
+    /** what I'm looking for — shown on the home page and the printable CV */
+    seeking: t('Ouvert aux stages, projets et jobs étudiants en développement', 'Open to internships, projects and student jobs in software'),
+    facets: ['C', 'Python', 'Linux', 'React / TS', 'Git', t('Leadership', 'Leadership'), t('Pédagogie', 'Teaching')],
   }
 
   const about = {
@@ -123,8 +126,8 @@ export function buildProfile(t: T) {
       'A computer science student at EPITA, serious and committed. I became comfortable speaking in public by teaching, in public speaking contests and on stage. I enjoy teamwork, learning by doing, and above all: making things.',
     ),
     motivation: t(
-      'Je ne me suis pas encore fixé de spécialité, et je préfère explorer avant de choisir. Ce que je sais déjà : j’aime créer des choses concrètes de bout en bout (un jeu, un outil en C, ce menu) et comprendre comment fonctionne ma machine, jusqu’à ma configuration Arch Linux. Mon objectif : devenir ingénieur, et exercer un métier qui me plaît, dans un cadre calme.',
-      'I haven’t settled on a speciality yet, and I’d rather explore before choosing. What I already know: I like making concrete things from start to finish (a game, a C tool, this menu) and understanding how my machine works, down to my Arch Linux setup. My goal: become an engineer, and do a job I enjoy, somewhere calm.',
+      'Je ne me suis pas encore fixé de spécialité, et je préfère explorer avant de choisir. Ce que je sais déjà : j’aime créer des choses concrètes de bout en bout (un jeu, un outil en C, ce menu) et comprendre comment fonctionne ma machine, jusqu’à ma configuration Arch Linux. Mon objectif : devenir ingénieur, et exercer un métier où l’on construit des choses utiles, en équipe.',
+      'I haven’t settled on a speciality yet, and I’d rather explore before choosing. What I already know: I like making concrete things from start to finish (a game, a C tool, this menu) and understanding how my machine works, down to my Arch Linux setup. My goal: become an engineer, and work where people build useful things together.',
     ),
     beyond: t(
       'Mon parcours ne se limite pas au cadre académique. Quatorze ans de conservatoire et cinq diplômes de musique m’ont appris la rigueur, la volonté et la confiance en soi sur scène. Aujourd’hui président et bassiste d’un groupe du club EPImusic, et ancien co-président du bureau des lycéens, j’aime organiser des projets collectifs et prendre des responsabilités.',
@@ -147,8 +150,43 @@ export function buildProfile(t: T) {
     { k: t('Études', 'Studies'), v: t('EPITA, 2e année — semestre 3', 'EPITA, 2nd year — semester 3'), icon: 'school', to: 'path' },
     { k: t('Projet', 'Project'), v: t('OCR en groupe : un réseau de neurones', 'Group OCR project: a neural network'), icon: 'folder', to: 'projects' },
     { k: t('Musique', 'Music'), v: t('Bassiste et président d’un groupe EPImusic', 'Bassist and president of an EPImusic band'), icon: 'bass', to: 'music' },
-    { k: t('À côté', 'On the side'), v: t('Peaufiner ma config Arch Linux', 'Polishing my Arch Linux setup'), icon: 'terminal', to: 'projects' },
+    { k: t('À côté', 'On the side'), v: t('Arch Linux au quotidien : shell, scripts, configuration', 'Arch Linux daily: shell, scripts, configuration'), icon: 'terminal', to: 'projects' },
   ]
+
+  /* HOME — what sets me apart, each backed by proofs (entry ids) */
+  const strengths: { id: string; icon: Glyph; title: string; text: string; proofs: string[] }[] = [
+    {
+      id: 'systems',
+      icon: 'terminal',
+      title: t('Bas niveau et systèmes', 'Low level and systems'),
+      text: t('Un clone de make en C, seul : parsing, mémoire, processus. Linux au quotidien.', 'A make clone in C, solo: parsing, memory, processes. Linux every day.'),
+      proofs: ['minimake', 'portfolio'],
+    },
+    {
+      id: 'lead',
+      icon: 'flag',
+      title: t('Leadership', 'Leadership'),
+      text: t('Président d’un groupe EPImusic, ex-co-président du bureau des lycéens.', 'President of an EPImusic band, former student council co-president.'),
+      proofs: ['epimusic', 'bdl'],
+    },
+    {
+      id: 'speak',
+      icon: 'mic',
+      title: t('Pédagogie et oral', 'Teaching and speaking'),
+      text: t('Un an de tutorat Python pour des collégiens. 5e sur 18 au concours d’éloquence du Lions Club.', 'A year teaching Python to middle schoolers. 5th of 18 at the Lions Club public speaking contest.'),
+      proofs: ['tutorat', 'eloquence'],
+    },
+    {
+      id: 'grit',
+      icon: 'medal',
+      title: t('Rigueur sur la durée', 'Long-term rigour'),
+      text: t('14 ans de conservatoire, 5 diplômes dont des félicitations du jury.', '14 years at the conservatoire, 5 diplomas, one with the jury’s congratulations.'),
+      proofs: ['conservatoire', 'concerts'],
+    },
+  ]
+
+  /* HOME + CV — projects shown first to a visitor */
+  const featured = ['minimake', 'myst', 'portfolio']
 
   /* MUSIC — the conservatoire at a glance */
   const music = {
@@ -299,14 +337,6 @@ export function buildProfile(t: T) {
       name: t('Certification PIX', 'PIX certification'),
       issuer: t('Certification nationale', 'French national certification'),
       detail: t('Certification des compétences numériques.', 'Certification of digital skills.'),
-    },
-    {
-      id: 'dip-assr',
-      group: 'school',
-      icon: 'scroll',
-      name: 'ASSR',
-      issuer: t('Collège', 'Middle school'),
-      detail: t('Attestation scolaire de sécurité routière.', 'School road-safety certificate.'),
     },
     {
       id: 'dip-gtr-2',
@@ -907,6 +937,8 @@ export function buildProfile(t: T) {
     identity,
     about,
     now,
+    strengths,
+    featured,
     music,
     languages,
     interests,

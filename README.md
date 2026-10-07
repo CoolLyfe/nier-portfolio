@@ -38,8 +38,17 @@ Les photos sont teintées dans la palette du menu et retrouvent leurs couleurs a
 
 ## Accueil
 
-Le site s'ouvre sur ACCUEIL, une mosaïque de cases de tailles différentes :
-carte d'identité, « En ce moment », photos, accès à chaque domaine et contact.
+Le site s'ouvre sur ACCUEIL, une mosaïque de cases de tailles différentes, pensée pour qu'un recruteur trouve l'essentiel en 30 secondes :
+carte d'identité (accroche, disponibilité, boutons CV / GitHub / contact), **Atouts** (ce qui me distingue, chaque atout renvoie à ses preuves),
+**Projets phares**, « En ce moment », photos, accès à chaque domaine et contact.
+
+Les atouts (`strengths`), les projets mis en avant (`featured`) et la ligne de disponibilité (`identity.seeking`) se modifient dans `profile.ts`.
+
+## CV en PDF
+
+Le bouton « CV (PDF) » de l'accueil (ou PROFIL › Contact › Exporter le CV, ou simplement Ctrl+P) imprime un CV sobre d'une page A4,
+généré à partir de `profile.ts` dans la langue affichée : choisir « Enregistrer en PDF » dans la fenêtre d'impression.
+La mise en page est dans `src/components/CvPrint.tsx` et le bloc `@media print` de `index.css`.
 
 ## Onglets
 
