@@ -1432,24 +1432,26 @@ body {
 }
 
 /* ---------- Jukebox --------------------------------------------------- */
-.wave-idle {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  height: 2.2rem;
+/* the concert video sits in an image well, toned like the photos until played */
+.photo.tape {
+  aspect-ratio: 9 / 16;
+  max-height: 26rem;
+  margin-inline: auto;
 }
-.wave-idle span {
-  flex: 1;
-  height: 20%;
-  background: var(--fg);
-  opacity: 0.45;
-  animation: wave 2.6s ease-in-out infinite;
+.photo.tape video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--well);
+  filter: grayscale(0.55) sepia(0.45) contrast(0.95);
+  transition: filter 700ms ease;
 }
-@keyframes wave {
-  50% {
-    height: 85%;
-    opacity: 0.8;
-  }
+.photo.tape:hover video,
+.photo.tape.playing video,
+.photo.tape video:focus-visible {
+  filter: none;
 }
 
 /* map: the current position breathes */

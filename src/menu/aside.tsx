@@ -87,7 +87,7 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
         </div>
       </Tile>
     ),
-    music: <PhotoTile n={3} photo={photo('band')} className="min-h-44 flex-1" onClick={() => show('photo-band')} />,
+    music: <PhotoTile n={3} photo={photo('museum-stairs')} className="min-h-44 flex-1" onClick={() => show('photo-museum-stairs')} />,
     commitments: (
       <Tile n={3} head={t('Ce que j’en retire', 'What I took from it')} code="+XP" className="flex-1">
         <div className="flex flex-wrap content-start gap-1.5">
@@ -99,8 +99,8 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
     ),
     life: (
       <div className="grid min-h-44 flex-1 grid-cols-2 gap-[inherit]">
-        <PhotoTile n={3} photo={photo('dojo')} onClick={() => show('photo-dojo')} />
-        <PhotoTile n={4} photo={photo('games')} onClick={() => show('photo-games')} />
+        <PhotoTile n={3} photo={photo('golf')} onClick={() => show('photo-golf')} />
+        <PhotoTile n={4} photo={photo('tiny')} onClick={() => show('photo-tiny')} />
       </div>
     ),
     profile: (

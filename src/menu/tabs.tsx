@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { GlyphIcon, Visual, type Glyph } from '../components/icons'
 import { PhotoFrame } from '../components/Photo'
 import { Meter, SquareList, Tag } from '../components/ui'
@@ -166,32 +166,42 @@ export function Tracks() {
   )
 }
 
-/** A dead-simple tape deck: recordings are not online yet. */
+/** A small tape deck: the museum concert plays, the other tracks are still to come. */
 function Jukebox() {
   const { t } = useLang()
-  const tracks = [
-    t('Guitare classique — enregistrement', 'Classical guitar — recording'),
-    t('Groupe EPImusic — répétition', 'EPImusic band — rehearsal'),
-    t('Kawaii future bass — première composition', 'Kawaii future bass — first composition'),
+  const [playing, setPlaying] = useState(false)
+  const tracks: { name: string; time?: string }[] = [
+    { name: t('Concert au musée — guitare classique, mai 2024', 'Museum concert — classical guitar, May 2024'), time: '2:15' },
+    { name: t('Groupe EPImusic — répétition', 'EPImusic band — rehearsal') },
+    { name: t('Kawaii future bass — première composition', 'Kawaii future bass — first composition') },
   ]
   return (
     <div className="desc-box mt-5">
-      <p className="label mb-3">{t('Pistes en attente de transfert', 'Tracks awaiting transfer')}</p>
+      <figure className={`photo well tape mb-4 ${playing ? 'playing' : ''}`}>
+        <video
+          src="media/museum-concert.mp4"
+          poster="gallery/jukebox-museum-poster.webp"
+          controls
+          preload="none"
+          playsInline
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          aria-label={tracks[0].name}
+        />
+        <span className="corner tl" />
+        <span className="corner br" />
+      </figure>
+      <p className="label mb-3">{t('Pistes', 'Tracks')}</p>
       <ol className="space-y-2">
         {tracks.map((x, i) => (
-          <li key={x} className="flex items-center gap-3 opacity-70">
+          <li key={x.name} className={`flex items-center gap-3 ${x.time ? '' : 'opacity-55'}`}>
             <span className="font-mono text-[0.8rem]">{String(i + 1).padStart(2, '0')}</span>
-            <GlyphIcon name="disc" className="h-4 w-4 flex-none" />
-            <span className="flex-1 truncate">{x}</span>
-            <span className="font-mono text-[0.8rem]">--:--</span>
+            <GlyphIcon name="disc" className={`h-4 w-4 flex-none ${x.time && playing ? 'spin-slow' : ''}`} />
+            <span className="flex-1 truncate">{x.name}</span>
+            <span className="font-mono text-[0.8rem]">{x.time ?? t('en attente', 'pending')}</span>
           </li>
         ))}
       </ol>
-      <div className="wave-idle mt-4" aria-hidden>
-        {Array.from({ length: 32 }, (_, i) => (
-          <span key={i} style={{ animationDelay: `${-i * 0.17}s` }} />
-        ))}
-      </div>
     </div>
   )
 }
@@ -259,6 +269,7 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
       macro: (
         <Card
           glyph={d.icon}
+          photo={P.gallery.find((g) => g.id === d.photo && g.src)}
           over={kind}
           title={d.name}
           stats={[
@@ -281,7 +292,16 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
     code,
     detail: k.proofs.length > 0,
     pod: k.pod,
-    macro: <Card glyph={k.icon} over={kind} title={k.name} stats={[...(k.facts ?? []), proofStat(P, t, k.proofs)]} text={k.detail} />,
+    macro: (
+      <Card
+        glyph={k.icon}
+        photo={P.gallery.find((g) => g.id === k.photo && g.src)}
+        over={kind}
+        title={k.name}
+        stats={[...(k.facts ?? []), proofStat(P, t, k.proofs)]}
+        text={k.detail}
+      />
+    ),
   })
 
   const project = (id: string): Entry => {
@@ -427,19 +447,19 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
             {
               id: 'jukebox',
               label: t('Enregistrements', 'Recordings'),
-              meta: t('BIENTÔT', 'SOON'),
-              desc: t('Enregistrements à venir : guitare, groupe, compositions.', 'Recordings coming soon: guitar, band, compositions.'),
+              meta: '×1',
+              desc: t('Concert au musée en vidéo ; groupe et compositions à venir.', 'Museum concert on video; band and compositions coming soon.'),
               title: 'Jukebox',
               code: 'AUDIO',
-              pod: t('Fichiers audio introuvables. Proposition : activer l’ambiance en attendant.', 'Audio files not found. Proposal: turn on the ambient sound meanwhile.'),
+              pod: t('Une archive audio récupérée. Volume recommandé : élevé.', 'One audio archive recovered. Recommended volume: high.'),
               macro: (
                 <Card
                   glyph="disc"
-                  over={t('Lecteur audio', 'Audio player')}
+                  over={t('Lecteur', 'Player')}
                   title={t('Enregistrements', 'Recordings')}
                   text={t(
-                    'Des enregistrements de guitare, du groupe EPImusic et de mes compositions sur FL Studio arriveront ici. En attendant, l’ambiance sonore du menu est jouable en haut à droite.',
-                    'Recordings of my guitar, the EPImusic band and my FL Studio compositions will land here. Meanwhile, the menu’s ambient sound can be played from the top right.',
+                    'Guitare classique en solo, lors du concert au musée de Bagnols-sur-Cèze pendant la journée nationale des musées. Les enregistrements du groupe EPImusic et de mes compositions sur FL Studio arriveront ensuite.',
+                    'Solo classical guitar, at the Bagnols-sur-Cèze museum concert during the national museum day. Recordings of the EPImusic band and my FL Studio compositions will follow.',
                   )}
                 >
                   <Jukebox />

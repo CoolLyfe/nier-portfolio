@@ -103,6 +103,8 @@ export interface Skill {
   detail: string
   facts?: { k: string; v: string }[]
   proofs: string[] // Project or log entry ids demonstrating it
+  /** gallery id whose picture illustrates the card, once it has a src */
+  photo?: string
   pod?: string
 }
 
@@ -117,6 +119,8 @@ export interface Diploma {
   /** 3 = Très bien + félicitations, 2 = Très bien, 1 = Bien */
   rank?: number
   detail: string
+  /** gallery id whose picture illustrates the card */
+  photo?: string
 }
 
 export interface Interest {
@@ -342,14 +346,46 @@ export function buildProfile(t: T) {
 
   /* LIFE + HOME — photo frames (pictures to come, see README) */
   const gallery: Photo[] = [
-    { id: 'portrait', icon: 'user', caption: t('Portrait', 'Portrait') },
-    { id: 'stage', icon: 'guitar', caption: t('Sur scène', 'On stage'), pod: t('Archive visuelle : concert. Volume recommandé : élevé.', 'Visual archive: concert. Recommended volume: high.') },
+    { id: 'portrait', icon: 'user', caption: t('Portrait', 'Portrait'), src: 'gallery/portrait.webp' },
+    {
+      id: 'stage',
+      icon: 'guitar',
+      caption: t('Ensemble de guitares, sur scène', 'Guitar ensemble, on stage'),
+      src: 'gallery/stage.webp',
+      pod: t('Archive visuelle : concert. Volume recommandé : élevé.', 'Visual archive: concert. Recommended volume: high.'),
+    },
+    {
+      id: 'museum',
+      icon: 'guitar',
+      caption: t('Concert au musée de Bagnols-sur-Cèze', 'Concert at the Bagnols-sur-Cèze museum'),
+      src: 'gallery/museum.webp',
+      pod: t('Lieu : un musée. Public : debout. Unité : concentrée.', 'Venue: a museum. Audience: standing. Unit: focused.'),
+    },
+    { id: 'museum-stairs', icon: 'guitar', caption: t('Au pied de l’escalier du musée', 'At the foot of the museum staircase'), src: 'gallery/museum-stairs.webp' },
+    { id: 'electric', icon: 'guitar', caption: t('À l’électrique', 'On electric'), src: 'gallery/electric.webp' },
+    {
+      id: 'plane',
+      icon: 'plane',
+      caption: t('Aux commandes', 'At the controls'),
+      src: 'gallery/plane.webp',
+      pod: t('Altitude de l’unité : en hausse.', 'Unit altitude: rising.'),
+    },
+    { id: 'plane-wide', icon: 'plane', caption: t('Avant le décollage', 'Before take-off'), src: 'gallery/plane-wide.webp' },
+    { id: 'bia', icon: 'scroll', caption: t('Remise des brevets d’initiation aéronautique', 'Aeronautics certificate ceremony'), src: 'gallery/bia.webp' },
+    { id: 'speech', icon: 'mic', caption: t('Concours d’éloquence', 'Public speaking contest'), src: 'gallery/speech.webp' },
+    { id: 'golf', icon: 'ball', caption: t('Au golf', 'On the golf course'), src: 'gallery/golf.webp' },
+    {
+      id: 'tiny',
+      icon: 'chip',
+      caption: t('Déjà en train de bricoler', 'Already tinkering'),
+      src: 'gallery/tiny.webp',
+      pod: t('Archive ancienne. Prototype d’unité, version 0.7.', 'Old archive. Unit prototype, version 0.7.'),
+    },
+    { id: 'band', icon: 'bass', caption: t('Le groupe EPImusic', 'The EPImusic band') },
+    { id: 'theatre', icon: 'mask', caption: t('Sur les planches', 'On the boards'), pod: t('Archive visuelle : représentation théâtrale. Rideau.', 'Visual archive: a stage play. Curtain.') },
     { id: 'dojo', icon: 'aikido', caption: t('Au dojo', 'At the dojo') },
     { id: 'kitchen', icon: 'cake', caption: t('En cuisine', 'In the kitchen') },
     { id: 'games', icon: 'gamepad', caption: t('Manette en main', 'Controller in hand') },
-    { id: 'band', icon: 'bass', caption: t('Le groupe EPImusic', 'The EPImusic band') },
-    { id: 'theatre', icon: 'mask', caption: t('Sur les planches', 'On the boards'), pod: t('Archive visuelle : représentation théâtrale. Rideau.', 'Visual archive: a stage play. Curtain.') },
-    { id: 'speech', icon: 'mic', caption: t('Concours d’éloquence', 'Public speaking contest') },
   ]
 
   /* PATH + MUSIC — diplomas and certifications */
@@ -381,6 +417,7 @@ export function buildProfile(t: T) {
       name: t('Brevet d’initiation aéronautique', 'Aeronautics initiation certificate (BIA)'),
       issuer: t('Lycée — classe de seconde', 'High school — 10th grade'),
       detail: t('Brevet d’initiation aéronautique obtenu en classe de seconde.', 'Aeronautics initiation certificate earned in 10th grade.'),
+      photo: 'bia',
     },
     {
       id: 'dip-pix',
@@ -746,6 +783,7 @@ export function buildProfile(t: T) {
         t('Auditions et concours au conservatoire.', 'Recitals and competitions at the conservatoire.'),
       ],
       skills: [t('Confiance en soi', 'Self-confidence'), t('Engagement', 'Commitment')],
+      photo: 'museum',
     },
     {
       id: 'orchestre',
@@ -762,6 +800,7 @@ export function buildProfile(t: T) {
         t('Apprendre à jouer ensemble : écouter les autres pupitres et suivre le chef.', 'Learning to play together: listening to the other sections and following the conductor.'),
       ],
       skills: [t('Travail en équipe', 'Teamwork'), t('Écoute', 'Listening')],
+      photo: 'stage',
     },
     {
       id: 'bdl',
@@ -997,6 +1036,7 @@ export function buildProfile(t: T) {
         { k: t('Statut', 'Status'), v: t('En activité', 'Active') },
       ],
       proofs: ['conservatoire', 'concerts', 'epimusic'],
+      photo: 'electric',
       pod: t('Arme principale de l’unité. Niveau de maîtrise : élevé.', 'This unit’s main weapon. Mastery level: high.'),
     },
     {

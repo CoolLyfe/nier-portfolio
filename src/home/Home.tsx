@@ -67,8 +67,8 @@ export function Home({ go }: { go: (tab: TabId) => void }) {
 
       {/* ---- what I love ---- */}
       <PhotoTile area="p1" n={1} photo={photo('stage')} onClick={() => go('music')} />
-      <PhotoTile area="p2" n={2} photo={photo('dojo')} onClick={() => go('life')} />
-      <PhotoTile area="p3" n={3} photo={photo('kitchen')} onClick={() => go('life')} />
+      <PhotoTile area="p2" n={2} photo={photo('plane')} onClick={() => go('life')} />
+      <PhotoTile area="p3" n={3} photo={photo('museum')} onClick={() => go('music')} />
 
       {/* ---- a door into every area ---- */}
       <Tile area="nav" n={4} head={t('Explorer', 'Explore')} code={`${S.tabs.length - 1} ${t('zones', 'areas')}`}>
