@@ -3,7 +3,9 @@
 /* ==================================================================
    NieR: Automata pause-menu palette, sampled from in-game captures.
    Sand menu by default; any element with [data-mode='hack'] switches
-   its subtree to the black / orange hacking palette.
+   its subtree to the black / orange terminal palette, and
+   [data-mode='void'] to the pale-platforms-in-the-dark palette of the
+   hacking minigame (open dossiers).
    ================================================================== */
 :root {
   --bg: #c8c3a8;          /* page */
@@ -43,6 +45,28 @@
   color: var(--fg);
 }
 
+[data-mode='void'] {
+  --bg: #3a3833;
+  --panel: #d9d4c1;
+  --panel-hi: #e4dfcc;
+  --item: #cac5b0;
+  --well: #aea994;
+  --fg: #3a3833;
+  --dim: #6b6759;
+  --mute: #9a9581;
+  --line: #3a3833;
+  --faint: rgb(58 56 51 / 0.08);
+  --sel-bg: #3a3833;
+  --sel-fg: #e4dfcc;
+  --shadow: rgb(20 19 16 / 0.45);
+  --accent: #e8662c;
+  --beige: #e4dfcc;
+  /* side faces of the extruded platforms */
+  --edge: #9d9884;
+  --edge-dark: #6f6b5c;
+  color: var(--fg);
+}
+
 /* `inline` so utilities read the variables where they are used,
    letting [data-mode='hack'] re-theme any subtree. */
 @theme inline {
@@ -68,7 +92,16 @@
 }
 
 html {
-  background: var(--bg);
+  background-color: var(--bg);
+  /* paper grain, hairline scanlines and the fine square grid of the menu
+     backdrop; on html, not body, so the fixed z-index:-1 .backdrop shows
+     above it instead of being painted over by body's background */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .29 0 0 0 0 .26 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(to bottom, rgb(78 75 66 / 0.05) 0 1px, transparent 1px 3px),
+    linear-gradient(to right, var(--faint) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--faint) 1px, transparent 1px);
+  background-size: 220px 220px, auto, 4px 4px, 4px 4px;
   color: var(--fg);
   font-family: var(--font-sans);
   font-size: 15px;
@@ -85,12 +118,6 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  background-color: var(--bg);
-  /* fine square grid of the menu backdrop */
-  background-image:
-    linear-gradient(to right, var(--faint) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--faint) 1px, transparent 1px);
-  background-size: 4px 4px;
 }
 
 /* backdrop: warm light, slow rings, soft arcs, square dust (components/Backdrop.tsx) */
@@ -109,6 +136,13 @@ body {
     radial-gradient(ellipse 55% 45% at 22% 30%, rgb(236 230 205 / 0.55), transparent 70%),
     radial-gradient(ellipse 40% 40% at 85% 80%, rgb(236 230 205 / 0.3), transparent 70%);
   animation: breathe 14s ease-in-out infinite alternate;
+}
+/* static hairlines, rulers and crosshair ornaments over the rings */
+.backdrop-ornaments {
+  color: rgb(78 75 66 / 0.3);
+}
+.backdrop-ornaments .soft {
+  opacity: 0.55;
 }
 .backdrop::after {
   content: '';
@@ -774,23 +808,19 @@ body {
 }
 
 /* ---------- HOME bento ---------------------------------------------- */
-/* Airy on purpose: wide gaps, generous padding, and a warm glow behind
-   the boxes so the first screen feels welcoming. */
+/* The cover: few boxes, wide gaps, a warm glow behind them. From tablet
+   width up it fills exactly the space between header and footer. */
 .bento {
   position: relative;
   display: grid;
   gap: 1.4rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: minmax(9.5rem, auto);
+  grid-auto-rows: minmax(11rem, auto);
   grid-template-areas:
     'id id'
-    'now now'
-    'as as'
-    'p1 p2'
-    'fp fp'
-    'p3 p4'
-    'nav nav'
-    'ct ct';
+    'p1 p1'
+    'p2 p3'
+    'nav nav';
 }
 .bento::before {
   content: '';
@@ -799,37 +829,26 @@ body {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 45% 35% at 25% 18%, rgb(244 230 196 / 0.75), transparent 70%),
-    radial-gradient(ellipse 35% 30% at 80% 55%, rgb(240 222 184 / 0.45), transparent 70%),
-    radial-gradient(ellipse 40% 30% at 30% 90%, rgb(240 226 194 / 0.4), transparent 70%);
+    radial-gradient(ellipse 45% 40% at 28% 35%, rgb(244 230 196 / 0.75), transparent 70%),
+    radial-gradient(ellipse 35% 35% at 82% 40%, rgb(240 222 184 / 0.45), transparent 70%),
+    radial-gradient(ellipse 50% 25% at 50% 95%, rgb(240 226 194 / 0.4), transparent 70%);
   animation: breathe 16s ease-in-out infinite alternate;
 }
 @media (min-width: 768px) {
   .bento {
-    gap: 1.9rem;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-template-areas:
-      'id id id id id id'
-      'now now now p1 p1 p1'
-      'as as as as as as'
-      'fp fp fp fp p2 p2'
-      'nav nav nav p3 p3 p3'
-      'nav nav nav p4 p4 p4'
-      'ct ct ct ct ct ct';
-  }
-}
-@media (min-width: 1280px) {
-  .bento {
-    gap: clamp(1.8rem, 2.3vw, 2.8rem);
+    flex: 1;
+    min-height: 0;
+    gap: clamp(1.2rem, 2.2vw, 2.4rem);
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    grid-auto-rows: minmax(9.5rem, auto);
+    grid-template-rows: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+    grid-auto-rows: auto;
     grid-template-areas:
-      'id id id id id id id now now now now now'
-      'id id id id id id id now now now now now'
-      'as as as as as as as as p1 p1 p1 p1'
-      'fp fp fp fp fp fp fp p2 p2 p2 p2 p2'
-      'nav nav nav nav p3 p3 p3 p3 p4 p4 p4 p4'
-      'nav nav nav nav ct ct ct ct ct ct ct ct';
+      'id id id id id id id id p1 p1 p1 p1'
+      'id id id id id id id id p2 p2 p3 p3'
+      'nav nav nav nav nav nav nav nav nav nav nav nav';
+  }
+  .bento > .tile {
+    min-height: 0;
   }
 }
 /* home boxes: warmer light, more room to breathe */
@@ -846,20 +865,38 @@ body {
   min-height: 2.2rem;
   padding: 0.25rem 1rem;
 }
-/* two by two: four strengths read as a square, not 3 + 1 */
-.bento .strengths {
-  gap: 1.4rem 2.2rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+.tile-cover .tile-body {
+  justify-content: center;
+  padding: clamp(1.4rem, 3vw, 2.6rem) clamp(1.4rem, 3.5vw, 3.2rem);
+}
+.tile-cover .home-name {
+  font-size: clamp(2.2rem, 4.2vw, 3.8rem);
+}
+.tile-cover .portrait {
+  width: clamp(8rem, 15vw, 14rem);
+}
+/* doors into each area, in one row on wide screens */
+.doors {
+  display: grid;
+  gap: 0.4rem 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 @media (min-width: 768px) {
-  .bento .strengths {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .doors {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-.welcome {
-  padding: 0.9rem 1.1rem;
-  background: color-mix(in srgb, var(--item) 35%, transparent);
-  border-left: 0.25rem solid var(--fg);
+@media (min-width: 1280px) {
+  .doors {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  /* six in a row: the names alone, so none gets cut */
+  .door-meta {
+    display: none;
+  }
+}
+.bento .tile:has(.doors) .tile-body {
+  padding-block: 1rem;
 }
 .greeting {
   font-size: 1.05rem;
@@ -868,23 +905,21 @@ body {
   color: var(--dim);
 }
 
-/* ---------- Column tabs: panels + soft side tiles --------------------- */
+/* ---------- Column tabs: long panels + soft tiles under the fiche ----- */
 .menu-grid {
   display: grid;
   gap: 1.25rem;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: 'sub' 'list' 'fiche' 'zone' 'extra';
+  grid-template-areas: 'sub' 'list' 'fiche';
   align-content: start;
 }
 @media (min-width: 768px) {
   .menu-grid {
     grid-template-columns: minmax(15rem, 34%) minmax(0, 1fr);
-    grid-template-rows: auto auto auto 1fr;
+    grid-template-rows: auto 1fr;
     grid-template-areas:
       'sub sub'
-      'list fiche'
-      'zone fiche'
-      'extra fiche';
+      'list fiche';
     align-content: stretch;
   }
 }
@@ -892,20 +927,29 @@ body {
   .menu-grid {
     gap: 1.6rem 2.6vw;
     grid-template-columns: minmax(12rem, 17%) minmax(15rem, 24%) minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      'cats list fiche'
-      'zone extra fiche';
+    grid-template-rows: 1fr;
+    grid-template-areas: 'cats list fiche';
+  }
+}
+/* the two tiles share the space left under the fiche */
+.aside-row {
+  display: grid;
+  flex: 1;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 640px) {
+  .aside-row {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   }
 }
 .aside-slot {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
   min-width: 0;
 }
 .aside-slot > .tile {
-  min-height: 9rem;
+  min-height: 10rem;
 }
 .figures.figures-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1472,9 +1516,249 @@ body {
     width: 100%;
   }
 }
-/* dossier: faint scanlines in the hacking palette */
-.hack-scan {
-  background-image: repeating-linear-gradient(to bottom, transparent 0 3px, rgb(255 106 43 / 0.035) 3px 4px);
+/* fiche sinking into the void while its dossier decrypts */
+.fiche.breach {
+  background: radial-gradient(ellipse 90% 80% at 50% 40%, #4a4740, #2b2a26);
+  color: var(--beige);
+}
+.fiche.breach .panel-head {
+  background: var(--beige);
+  color: var(--bg);
+}
+
+/* ---------- Hacking void (open dossier, components/VoidScene.tsx) --- */
+.void-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse 75% 70% at 50% 42%, #4b4841 0%, #35332e 55%, #1f1e1b 100%);
+}
+/* a lower platform far beneath the dossier, catching its shadow */
+.void-floor {
+  position: absolute;
+  left: 50%;
+  bottom: -6vh;
+  width: 78vw;
+  height: 95vh;
+  background:
+    radial-gradient(ellipse 36% 22% at 50% 30%, rgb(20 19 16 / 0.6), transparent 70%),
+    linear-gradient(to bottom, #b4af9b, #9a9581 45%, #6f6b5c);
+  box-shadow: 0 -3px 0 #d9d4c1;
+  opacity: 0.6;
+  transform: translateX(-50%) perspective(700px) rotateX(58deg);
+  transform-origin: center bottom;
+  animation: floor-shadow 6.5s ease-in-out infinite;
+}
+@keyframes floor-shadow {
+  50% {
+    opacity: 0.52;
+  }
+}
+/* far fog: columns and blocks fade into it from the bottom */
+.void-fog {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, transparent 35%, rgb(31 30 27 / 0.75) 100%),
+    repeating-linear-gradient(to bottom, transparent 0 3px, rgb(228 223 204 / 0.025) 3px 4px);
+}
+/* pale pillars sinking into the dark, drifting up and down by depth */
+.void-column {
+  position: absolute;
+  height: 125%;
+  background: linear-gradient(to bottom, #cfcab6 0%, #a9a491 22%, rgb(110 106 94 / 0.5) 60%, transparent 92%);
+  box-shadow: inset -0.5vw 0 0 rgb(0 0 0 / 0.12);
+  opacity: calc(0.85 - var(--depth) * 0.55);
+  filter: blur(calc(var(--depth) * 2.5px));
+  animation: void-drift ease-in-out infinite alternate;
+}
+/* small extruded blocks: top face + side face + a shadow far below */
+.void-block {
+  position: absolute;
+  z-index: 1;
+  background: #d9d4c1;
+  box-shadow:
+    0 calc(0.55rem - var(--depth) * 0.3rem) 0 #8f8a76,
+    0 2.5rem 1.6rem -0.6rem rgb(0 0 0 / 0.45);
+  opacity: calc(1 - var(--depth) * 0.6);
+  filter: blur(calc(var(--depth) * 1.5px));
+  animation: void-bob ease-in-out infinite alternate;
+}
+@keyframes void-drift {
+  from {
+    transform: translateY(calc(-1.5rem + var(--depth) * 1rem));
+  }
+  to {
+    transform: translateY(calc(1.5rem - var(--depth) * 1rem));
+  }
+}
+@keyframes void-bob {
+  from {
+    transform: translate3d(0, 0.7rem, 0) rotate(-2deg);
+  }
+  to {
+    transform: translate3d(0.6rem, -0.9rem, 0) rotate(3deg);
+  }
+}
+/* label engraved on a far platform, seen at an angle */
+.void-engraving {
+  position: absolute;
+  left: 4%;
+  bottom: 6%;
+  z-index: 1;
+  display: grid;
+  margin: 0;
+  font-size: clamp(2.6rem, 7vw, 6.5rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(228 223 204 / 0.14);
+  transform: perspective(900px) rotateX(48deg) rotateZ(-8deg);
+  transform-origin: left bottom;
+}
+.void-engraving span + span {
+  font-size: 0.55em;
+  color: rgb(228 223 204 / 0.07);
+}
+/* white motes rising and twinkling; a few orange sparks */
+.void-mote {
+  position: absolute;
+  z-index: 3;
+  background: #f2eedf;
+  box-shadow: 0 0 6px rgb(242 238 223 / 0.6);
+  animation: void-mote ease-in-out infinite;
+}
+.void-mote.spark {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+@keyframes void-mote {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  40%,
+  60% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(var(--rise));
+  }
+}
+
+/* the dossier itself: a pale extruded platform hovering above its shadow */
+.platform {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(170deg, var(--panel-hi), var(--panel) 45%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 1.1rem 0 var(--edge),
+    0 1.1rem 0 1px var(--edge-dark),
+    0 4.5rem 4rem -1.5rem rgb(0 0 0 / 0.5);
+  animation: platform-float 6.5s ease-in-out infinite;
+}
+.platform-shadow {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -5.5rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.5), transparent);
+  animation: platform-shadow 6.5s ease-in-out infinite;
+}
+@keyframes platform-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.7rem);
+  }
+}
+@keyframes platform-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+/* the player's ship, hovering by the platform's top-left corner */
+.void-ship {
+  position: absolute;
+  z-index: 2;
+  top: -2.6rem;
+  left: -1.6rem;
+  width: 3.6rem;
+  height: 3.6rem;
+  pointer-events: none;
+  animation: ship-hover 4.2s ease-in-out infinite;
+}
+.void-ship svg {
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgb(242 238 223 / 0.5));
+}
+.void-ship .ring {
+  fill: none;
+  stroke: #e9d79a;
+  stroke-width: 1.6;
+  opacity: 0.85;
+}
+.void-ship .ring.thin {
+  stroke-width: 0.7;
+  stroke-dasharray: 2 3;
+  opacity: 0.6;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spin 9s linear infinite;
+}
+.void-ship .hull {
+  fill: #f6f2e4;
+  stroke: #3a3833;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.void-ship .core {
+  fill: #3a3833;
+}
+.void-ship-shadow {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: -1.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.45), transparent);
+  animation: platform-shadow 4.2s ease-in-out infinite;
+}
+@keyframes ship-hover {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-6deg);
+  }
+  50% {
+    transform: translate(0.35rem, -0.6rem) rotate(4deg);
+  }
+}
+@media (max-width: 639px) {
+  .void-ship {
+    display: none;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1565,88 +1849,4 @@ body {
   text-align: center;
   background: var(--fg);
   color: var(--panel);
-}
-
-/* ---------- Printable résumé (see components/CvPrint.tsx) ------------ */
-.cv-print {
-  display: none;
-}
-@media print {
-  @page {
-    size: A4;
-    margin: 12mm 13mm;
-  }
-  html,
-  body {
-    background: white !important;
-    color: #1c1b18;
-    font-size: 9.6pt;
-    letter-spacing: 0.01em;
-  }
-  #root > :not(.cv-print) {
-    display: none !important;
-  }
-  .cv-print {
-    display: block;
-    line-height: 1.38;
-  }
-  .cv-head {
-    display: flex;
-    justify-content: space-between;
-    gap: 1.5rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 2px solid #4e4b42;
-  }
-  .cv-head h1 {
-    font-size: 21pt;
-    font-weight: 300;
-    letter-spacing: 0.08em;
-    line-height: 1.1;
-  }
-  .cv-role {
-    margin-top: 0.15rem;
-    font-weight: 500;
-  }
-  .cv-contact {
-    text-align: right;
-    font-size: 8.8pt;
-    color: #4e4b42;
-  }
-  .cv-seeking {
-    margin: 0.5rem 0 0.2rem;
-    font-weight: 500;
-  }
-  .cv-cols {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 33%;
-    gap: 1.4rem;
-  }
-  .cv-print h2 {
-    margin: 0.75rem 0 0.35rem;
-    padding-bottom: 0.1rem;
-    font-size: 9pt;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    border-bottom: 1px dotted #6f6b5c;
-  }
-  .cv-item {
-    margin-bottom: 0.45rem;
-    break-inside: avoid;
-  }
-  .cv-line {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.8rem;
-  }
-  .cv-line span {
-    flex: none;
-    color: #6f6b5c;
-  }
-  .cv-dim {
-    color: #6f6b5c;
-  }
-  .cv-print aside p + p {
-    margin-top: 0.2rem;
-  }
 }

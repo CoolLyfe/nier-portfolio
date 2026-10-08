@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, type Transition } from 'framer-motion'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { WindowHead, useUi } from '../components/ui'
+import { VoidScene, VoidShip } from '../components/VoidScene'
 import { useLang } from '../i18n'
 
 /** Servo-like easing: fast start, hard stop. */
@@ -12,10 +13,9 @@ const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matc
 const BREACH_MS = 650
 
 /**
- * Right-column fiche. Opening its dossier switches the same window to
- * the black/orange hacking palette for a short decrypt, then the parent
- * moves to 'open' and <DetailLayer> grows out of it (shared layoutId),
- * still in hacking colours.
+ * Right-column fiche. Opening its dossier sinks the same window into the
+ * hacking void for a short decrypt, then the parent moves to 'open' and
+ * <DetailLayer> grows out of it (shared layoutId) as a floating platform.
  */
 export function MacroWindow({
   id,
@@ -54,9 +54,9 @@ export function MacroWindow({
       layout
       layoutId={`win-${id}`}
       transition={MECH}
-      data-mode={breaching ? 'hack' : undefined}
+      data-mode={breaching ? 'void' : undefined}
       data-modal={breaching ? '' : undefined}
-      className={`window fiche flex h-full flex-col ${breaching ? 'glitch' : ''}`}
+      className={`window fiche flex h-full flex-col ${breaching ? 'breach glitch' : ''}`}
     >
       <WindowHead title={breaching ? `HACKING // ${title}` : title} code={code} />
       {breaching ? (
@@ -92,7 +92,10 @@ export function MacroWindow({
   )
 }
 
-/** Full dossier, grown from the fiche, in the hacking palette. */
+/**
+ * Full dossier, grown from the fiche: a pale platform floating in the
+ * hacking void, bobbing above its own shadow, with the ship hovering by.
+ */
 export function DetailLayer({
   id,
   title,
@@ -127,44 +130,53 @@ export function DetailLayer({
   return (
     <AnimatePresence>
       {id && (
-        <div data-modal data-mode="hack" className="fixed inset-0 z-50 grid place-items-center p-3 sm:p-8">
+        <div data-modal data-mode="void" className="fixed inset-0 z-50 grid grid-rows-[minmax(0,1fr)] place-items-center p-3 pt-10 pb-16 sm:px-16 sm:pt-[9vh] sm:pb-[15vh]">
           <motion.div
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
             onClick={onClose}
-          />
+          >
+            <VoidScene label={title} />
+          </motion.div>
           <motion.div
             layoutId={`win-${id}`}
             transition={MECH}
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="window hack-scan relative flex max-h-full w-full max-w-5xl flex-col overflow-hidden"
+            className="relative flex max-h-full w-full max-w-[60rem] flex-col"
           >
-            <div className="panel-head">
-              <span className="truncate">{t('Déchiffré', 'Decrypted')} -{title}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  blip('back')
-                  onClose()
-                }}
-                className="ml-auto flex flex-none items-center text-[0.85rem] hover:opacity-70"
+            <span className="platform-shadow" aria-hidden />
+            <div className="platform flex min-h-0 flex-col">
+              <div className="panel-head">
+                <span className="truncate">
+                  {t('Accès déverrouillé', 'Access unlocked')} -{title}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    blip('back')
+                    onClose()
+                  }}
+                  className="ml-auto flex flex-none items-center text-[0.85rem] hover:opacity-70"
+                >
+                  <span className="key bg-on-sel! text-sel!">B</span>
+                  <span className="max-sm:hidden">{t('Fermer', 'Close')}</span>
+                </button>
+              </div>
+              <motion.div
+                className="min-h-0 overflow-y-auto p-5 sm:p-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { delay: 0.35, duration: 0.15 } }}
+                exit={{ opacity: 0, transition: { duration: 0.05 } }}
               >
-                <span className="key bg-on-sel! text-sel!">B</span>
-                <span className="max-sm:hidden">{t('Fermer', 'Close')}</span>
-              </button>
+                {children}
+              </motion.div>
             </div>
-            <motion.div
-              className="overflow-y-auto p-5 sm:p-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { delay: 0.35, duration: 0.15 } }}
-              exit={{ opacity: 0, transition: { duration: 0.05 } }}
-            >
-              {children}
-            </motion.div>
+            <VoidShip />
           </motion.div>
         </div>
       )}

@@ -46,9 +46,10 @@ Les atouts (`strengths`), les projets mis en avant (`featured`) et la ligne de d
 
 ## CV en PDF
 
-Le bouton « CV (PDF) » de l'accueil (ou PROFIL › Contact › Exporter le CV, ou simplement Ctrl+P) imprime un CV sobre d'une page A4,
-généré à partir de `profile.ts` dans la langue affichée : choisir « Enregistrer en PDF » dans la fenêtre d'impression.
-La mise en page est dans `src/components/CvPrint.tsx` et le bloc `@media print` de `index.css`.
+Le bouton « CV (PDF) » de l'accueil (ou PROFIL › Contact › Exporter le CV) ouvre `public/Louis_Leymonie_CV.pdf`,
+mon CV fait sur Canva. Le numéro de téléphone et l'adresse postale en sont retirés avant publication :
+pour le mettre à jour, exporter le nouveau PDF depuis Canva, retirer ces deux infos, puis remplacer le fichier.
+Les versions Markdown et JSON restent générées à partir de `profile.ts`.
 
 ## Onglets
 

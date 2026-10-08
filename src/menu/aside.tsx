@@ -6,10 +6,10 @@ import type { TabId } from '../data/profile'
 import { useLang } from '../i18n'
 
 /* ------------------------------------------------------------------
-   Side tiles of the column tabs: under the categories, a summary of
-   the area with a few figures; under the list, one box of its own
-   (photos, stack, skills gained, contact…). Same soft boxes as the
-   home page, placed by the .menu-grid areas in index.css.
+   Side tiles of the column tabs, side by side under the fiche: a
+   summary of the area with a few figures, and one box of its own
+   (right now, photos, stack, skills gained, contact…). Same soft
+   boxes as the home page (see .aside-row in index.css).
    ------------------------------------------------------------------ */
 
 const uniq = (xs: string[]) => [...new Set(xs)]
@@ -19,7 +19,7 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
   const def = S.tabs.find((x) => x.id === tab)!
   const photo = (id: string) => P.gallery.find((g) => g.id === id)!
   const count = <X extends { group?: string }>(xs: X[], g: string) => `${xs.filter((x) => x.group === g).length}`
-  const quests = P.experience.filter((e) => e.group === 'lead' || e.group === 'job' || e.group === 'contest')
+  const quests = P.experience.filter((e) => e.group === 'lead' || e.group === 'job' || e.group === 'speech' || e.group === 'contest')
 
   const figures: Partial<Record<TabId, [string, string][]>> = {
     path: [
@@ -42,7 +42,8 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
     ],
     commitments: [
       [count(P.experience, 'lead'), t('responsabilités', 'responsibilities')],
-      [count(P.experience, 'job'), t('emplois', 'jobs')],
+      [count(P.experience, 'job'), t('stage & emplois', 'internship & jobs')],
+      [count(P.experience, 'speech'), t('oral & théâtre', 'speech & theatre')],
       [count(P.experience, 'contest'), t('concours', 'contests')],
       [`${uniq(quests.flatMap((e) => e.skills)).length}`, t('compétences', 'skills')],
     ],
@@ -52,6 +53,7 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
       [`${P.gallery.length}`, t('photos', 'photos')],
     ],
     profile: [
+      [`${P.keySkills.length}`, t('compétences clés', 'key competences')],
       [`${P.softSkills.length}`, 'soft skills'],
       [`${P.selfAssessment.strengths.length}`, t('points forts', 'strengths')],
       [`${P.languages.length}`, t('langues', 'languages')],
@@ -60,21 +62,20 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
 
   const extra: Partial<Record<TabId, ReactNode>> = {
     path: (
-      <Tile n={3} head={t('Prochaine étape', 'Next step')} code="NEXT" className="flex-1" pod={def.pod}>
-        <div>
-          <p className="flex items-center gap-2 leading-snug">
-            <GlyphIcon name="target" className="h-4 w-4 flex-none" />
-            {P.identity.target}
-          </p>
-          <p className="seeking mt-4">
-            <span className="live" aria-hidden />
-            {P.identity.seeking}
-          </p>
-        </div>
-        <p className="label mt-4 flex items-center gap-2">
-          <GlyphIcon name="pin" className="h-3.5 w-3.5" />
-          {P.identity.location}
-        </p>
+      <Tile n={3} head={t('En ce moment', 'Right now')} code={<span className="live">LIVE</span>} className="flex-1" pod={t('Données en temps réel. Dernière synchronisation : aujourd’hui.', 'Live data. Last sync: today.')}>
+        <ul className="space-y-1">
+          {P.now.map((x) => (
+            <li key={x.k} className="flex items-center gap-3 py-1">
+              <span className="now-icon">
+                <GlyphIcon name={x.icon} className="h-[1.1rem] w-[1.1rem]" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="label block">{x.k}</span>
+                <span className="block leading-snug">{x.v}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
       </Tile>
     ),
     projects: (
@@ -86,7 +87,7 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
         </div>
       </Tile>
     ),
-    music: <PhotoTile n={3} photo={photo('band')} className="min-h-44 flex-1 md:max-xl:max-h-80" onClick={() => show('photo-band')} />,
+    music: <PhotoTile n={3} photo={photo('band')} className="min-h-44 flex-1" onClick={() => show('photo-band')} />,
     commitments: (
       <Tile n={3} head={t('Ce que j’en retire', 'What I took from it')} code="+XP" className="flex-1">
         <div className="flex flex-wrap content-start gap-1.5">
@@ -97,7 +98,7 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
       </Tile>
     ),
     life: (
-      <div className="grid min-h-44 flex-1 grid-cols-2 gap-[inherit] md:max-xl:max-h-80">
+      <div className="grid min-h-44 flex-1 grid-cols-2 gap-[inherit]">
         <PhotoTile n={3} photo={photo('dojo')} onClick={() => show('photo-dojo')} />
         <PhotoTile n={4} photo={photo('games')} onClick={() => show('photo-games')} />
       </div>
@@ -118,23 +119,23 @@ export function AsideTiles({ tab, show }: { tab: TabId; show: (id: string) => vo
             <span className="min-w-0 flex-1 truncate">github.com/CoolLyfe ↗</span>
           </a>
         </div>
-        <button type="button" className="cta cta-main mt-4 self-start" onClick={() => window.print()}>
+        <a className="cta cta-main mt-4 self-start" href={P.contact.cv} target="_blank" rel="noreferrer">
           <GlyphIcon name="download" className="h-4 w-4" />
           {t('CV (PDF)', 'Résumé (PDF)')}
-        </button>
+        </a>
       </Tile>
     ),
   }
 
   return (
     <>
-      <div key={`${tab}-zone`} className="aside-slot" style={{ gridArea: 'zone' }}>
+      <div key={`${tab}-zone`} className="aside-slot">
         <Tile n={2} head={t('Aperçu', 'Overview')} className="flex-1" pod={def.pod}>
           <p className="leading-relaxed">{def.desc}</p>
           <Figures items={figures[tab] ?? []} className="figures-2 mt-5" />
         </Tile>
       </div>
-      <div key={`${tab}-extra`} className="aside-slot" style={{ gridArea: 'extra' }}>
+      <div key={`${tab}-extra`} className="aside-slot">
         {extra[tab]}
       </div>
     </>

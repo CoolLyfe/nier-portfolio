@@ -22,6 +22,13 @@ export function buildStrings(t: T) {
       pod: t('Bienvenue. Cette unité s’appelle Louis. Recommandation : explorer chaque case.', 'Welcome. This unit is called Louis. Recommendation: explore every box.'),
     },
     {
+      id: 'profile',
+      label: t('PROFIL', 'PROFILE'),
+      sub: t('Système', 'System'),
+      desc: t('Qui je suis, mes 3 compétences clés, soft skills, bilan, contact et réglages.', 'Who I am, my 3 key competences, soft skills, self-assessment, contact and settings.'),
+      pod: t('Profil de l’unité. Canal de contact disponible.', 'Unit profile. Contact channel available.'),
+    },
+    {
       id: 'path',
       label: t('PARCOURS', 'PATH'),
       sub: t('Carte', 'Map'),
@@ -46,7 +53,7 @@ export function buildStrings(t: T) {
       id: 'commitments',
       label: t('ENGAGEMENTS', 'COMMITMENTS'),
       sub: t('Quêtes', 'Quests'),
-      desc: t('Responsabilités, emplois et concours.', 'Responsibilities, jobs and contests.'),
+      desc: t('Responsabilités, stage, emplois, éloquence, théâtre et concours.', 'Responsibilities, internship, jobs, public speaking, theatre and contests.'),
       pod: t('Quêtes accomplies. Récompenses : compétences.', 'Quests completed. Rewards: skills.'),
     },
     {
@@ -55,13 +62,6 @@ export function buildStrings(t: T) {
       sub: t('Hors service', 'Off duty'),
       desc: t('Sport, passions et photos.', 'Sport, passions and photos.'),
       pod: t('Données personnelles. L’unité a aussi une vie en dehors de l’écran.', 'Personal data. This unit has a life away from the screen too.'),
-    },
-    {
-      id: 'profile',
-      label: t('PROFIL', 'PROFILE'),
-      sub: t('Système', 'System'),
-      desc: t('Qui je suis, soft skills, bilan, contact et réglages.', 'Who I am, soft skills, self-assessment, contact and settings.'),
-      pod: t('Profil de l’unité. Canal de contact disponible.', 'Unit profile. Contact channel available.'),
     },
   ]
 

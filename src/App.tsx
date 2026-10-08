@@ -1,7 +1,6 @@
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Backdrop } from './components/Backdrop'
-import { CvPrint } from './components/CvPrint'
 import { GlyphIcon, TabIcon } from './components/icons'
 import { PodProvider, usePod } from './components/Pod'
 import { Row, UiContext, modalOpen } from './components/ui'
@@ -243,13 +242,13 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
 
   return (
     <UiContext.Provider value={ui}>
-      <CvPrint />
       <AnimatePresence>{booting && <Boot onDone={endBoot} />}</AnimatePresence>
       <Backdrop />
       {crt && <div className="crt" aria-hidden />}
 
       <LayoutGroup>
-        <div className="flex min-h-dvh flex-col">
+        {/* the home page is a cover: from tablet width up it fits the screen, no scrolling */}
+        <div className={`flex min-h-dvh flex-col ${isHome ? 'md:h-dvh' : ''}`}>
           {/* ---- top: tab bar + dotted rule + title ---- */}
           <header className="pt-4 sm:pt-5">
             <nav ref={tabsRef} aria-label={t('Onglets', 'Tabs')} className="tabbar px-4 sm:pl-[4.5vw] sm:pr-[3vw]">
@@ -282,11 +281,11 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
           </header>
 
           {isHome ? (
-            <main className="w-full flex-1 px-4 pt-6 pb-8 sm:px-[3vw] xl:pl-[4.5vw]">
-              <Home go={go} show={show} />
+            <main className="flex min-h-0 w-full flex-1 flex-col px-4 pt-6 pb-5 sm:px-[3vw] xl:pl-[4.5vw]">
+              <Home go={go} />
             </main>
           ) : (
-            /* ---- categories | list | fiche, soft tiles under the first two (menu/aside.tsx) ---- */
+            /* ---- categories | list | fiche, soft tiles under the fiche (menu/aside.tsx) ---- */
             <main className="menu-grid w-full flex-1 px-4 pt-6 pb-6 sm:px-[3vw] xl:pl-[4.5vw]">
               {/* categories: vertical panel on large screens, strip below */}
               <div key={`${tab}-cats`} className="soft-in panel max-xl:hidden" style={{ gridArea: 'cats' }} data-focus={focus === 'cat'}>
@@ -330,7 +329,7 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
                 ))}
               </div>
 
-              <div key={`${tab}-${c}`} className="soft-in panel pb-3" style={{ gridArea: 'list' }} data-focus={focus === 'list'}>
+              <div key={`${tab}-${c}`} className="soft-in panel self-start pb-3 xl:self-stretch" style={{ gridArea: 'list' }} data-focus={focus === 'list'}>
                 <span className="rail" aria-hidden />
                 <p className="panel-head">{cat.label}</p>
                 <div className="panel-rule mb-2" aria-hidden />
@@ -353,23 +352,26 @@ function Menu({ podAwake, setPodAwake }: { podAwake: boolean; setPodAwake: (v: b
                 <span className="track" aria-hidden />
               </div>
 
-              <div className="min-w-0" style={{ gridArea: 'fiche' }}>
-                {entry && (
-                  <MacroWindow
-                    id={entry.id}
-                    title={entry.title}
-                    code={entry.code}
-                    detail={!!entry.detail}
-                    phase={breach?.id === entry.id ? phase : 'idle'}
-                    onBreach={() => confirm(cur)}
-                    onOpened={onOpened}
-                  >
-                    {entry.macro}
-                  </MacroWindow>
-                )}
+              <div className="flex min-w-0 flex-col gap-6" style={{ gridArea: 'fiche' }}>
+                <div>
+                  {entry && (
+                    <MacroWindow
+                      id={entry.id}
+                      title={entry.title}
+                      code={entry.code}
+                      detail={!!entry.detail}
+                      phase={breach?.id === entry.id ? phase : 'idle'}
+                      onBreach={() => confirm(cur)}
+                      onOpened={onOpened}
+                    >
+                      {entry.macro}
+                    </MacroWindow>
+                  )}
+                </div>
+                <div className="aside-row">
+                  <AsideTiles tab={tab} show={show} />
+                </div>
               </div>
-
-              <AsideTiles tab={tab} show={show} />
             </main>
           )}
 

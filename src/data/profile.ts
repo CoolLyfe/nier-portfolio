@@ -21,6 +21,8 @@ export interface Project {
   context: string
   objective: string
   stack: string[]
+  /** why these technologies, not others */
+  choices?: string
   /* empty lists / missing retrospective are simply not shown (project in progress) */
   architecture: { name: string; role: string }[]
   metrics: { k: string; v: string }[]
@@ -36,8 +38,8 @@ export interface Project {
 
 export interface LogEntry {
   id: string
-  /** PATH: school — MUSIC: music | stage — COMMITMENTS: lead | job | contest */
-  group: 'school' | 'music' | 'stage' | 'lead' | 'job' | 'contest'
+  /** PATH: school — MUSIC: music | stage — COMMITMENTS: lead | job | speech | contest */
+  group: 'school' | 'music' | 'stage' | 'lead' | 'job' | 'speech' | 'contest'
   icon: Glyph
   /** short label when cited as a proof */
   short?: string
@@ -47,7 +49,47 @@ export interface LogEntry {
   summary: string
   details: string[]
   skills: string[]
+  /** what the experience taught me, looking back */
+  reflection?: string
+  /** gallery id whose picture illustrates the card, once it has a src */
+  photo?: string
+  /** speeches written for this entry (eloquence) */
+  speeches?: Speech[]
   pod?: string
+}
+
+export interface Speech {
+  id: string
+  title: string
+  /** where, when, under which constraint */
+  context: string
+  /** how I tackled the subject */
+  angle: string
+  /** a line from the text */
+  quote: string
+  /** e.g. "5e / 18" */
+  result?: string
+}
+
+/**
+ * The three key competences the portfolio is built around: why they
+ * matter, the proofs, and an honest look at what is mastered, what is
+ * missing and what comes next.
+ */
+export interface KeySkill {
+  id: string
+  icon: Glyph
+  name: string
+  /** one line, shown in lists */
+  summary: string
+  /** why it matters in the job I'm heading for */
+  why: string
+  /** self-assessed mastery, 1 to 5 */
+  level: number
+  proofs: string[]
+  mastered: string[]
+  gaps: string[]
+  next: string[]
 }
 
 export interface Skill {
@@ -115,7 +157,7 @@ export function buildProfile(t: T) {
       'J’aime construire des outils de bout en bout et comprendre ce qui se passe sous le capot. À côté du code : 14 ans de conservatoire, la présidence d’un groupe étudiant et des années à enseigner et à prendre la parole en public.',
       'I like building tools end to end and understanding what happens under the hood. Beyond code: 14 years at the conservatoire, running a student band, and years of teaching and public speaking.',
     ),
-    /** what I'm looking for — shown on the home page and the printable CV */
+    /** what I'm looking for — shown on the home page */
     seeking: t('Ouvert aux stages, projets et jobs étudiants en développement', 'Open to internships, projects and student jobs in software'),
     facets: ['C', 'Python', 'Linux', 'React / TS', 'Git', t('Leadership', 'Leadership'), t('Pédagogie', 'Teaching')],
   }
@@ -135,13 +177,21 @@ export function buildProfile(t: T) {
     ),
     objectives: [
       t('Présenter mon parcours, à l’école comme en dehors.', 'Present my path, at school and beyond.'),
+      t('Mettre en avant trois compétences clés, chacune justifiée par des preuves concrètes.', 'Highlight three key competences, each backed by concrete proofs.'),
       t('Relier chaque compétence à une réalisation ou une expérience concrète.', 'Link each skill to a concrete achievement or experience.'),
       t('Évaluer honnêtement mes points forts et mes axes de progression.', 'Honestly assess my strengths and the areas I need to improve.'),
       t('Disposer d’un outil évolutif, enrichi à chaque semestre.', 'Keep an evolving tool, updated every semester.'),
     ],
+    /** how the site is organised, for a first-time visitor */
+    guide: [
+      t('Parcours : formation, matières, diplômes et langues.', 'Path: studies, subjects, diplomas and languages.'),
+      t('Projets : chaque projet a un dossier complet (contexte, choix techniques, rôle, difficultés, bilan).', 'Projects: each one has a full file (context, technical choices, role, challenges, review).'),
+      t('Musique et Engagements : scène, responsabilités, stage et emplois.', 'Music and Commitments: stage, responsibilities, internship and jobs.'),
+      t('Profil : mes trois compétences clés, mes soft skills et mon bilan.', 'Profile: my three key competences, my soft skills and my self-assessment.'),
+    ],
     conclusion: t(
-      'En un peu plus d’un an, je suis passé de l’écriture de programmes isolés en Python à la conception de systèmes complets en C, testés et construits en équipe. Ce portfolio est un point d’étape : il sera enrichi au fil de mes projets.',
-      'In a little over a year, I went from writing standalone Python programs to designing complete C systems, tested and built as a team. This portfolio is a checkpoint: it will grow with my projects.',
+      'En un peu plus d’un an, je suis passé de l’écriture de programmes isolés en Python à la conception de systèmes complets en C, testés et construits en équipe. Mon stage m’a montré l’autre côté : la réalité d’un commerce, le contact client et la fiabilité au quotidien. Ce portfolio est un point d’étape : il m’a obligé à relier ce que je fais à ce que je sais faire, et il sera enrichi à chaque semestre, jusqu’au choix de ma spécialité.',
+      'In a little over a year, I went from writing standalone Python programs to designing complete C systems, tested and built as a team. My internship showed me the other side: how a shop really runs, dealing with customers and being reliable every day. This portfolio is a checkpoint: it made me link what I do to what I can do, and it will grow every semester, until I choose my speciality.',
     ),
   }
 
@@ -173,8 +223,8 @@ export function buildProfile(t: T) {
       id: 'speak',
       icon: 'mic',
       title: t('Pédagogie et oral', 'Teaching and speaking'),
-      text: t('Un an de tutorat Python pour des collégiens. 5e sur 18 au concours d’éloquence du Lions Club.', 'A year teaching Python to middle schoolers. 5th of 18 at the Lions Club public speaking contest.'),
-      proofs: ['tutorat', 'eloquence'],
+      text: t('Un an de tutorat Python pour des collégiens. Trois ans de concours d’éloquence, quatre ans de théâtre.', 'A year teaching Python to middle schoolers. Three years of public speaking contests, four years of theatre.'),
+      proofs: ['tutorat', 'eloquence', 'theatre'],
     },
     {
       id: 'grit',
@@ -298,6 +348,8 @@ export function buildProfile(t: T) {
     { id: 'kitchen', icon: 'cake', caption: t('En cuisine', 'In the kitchen') },
     { id: 'games', icon: 'gamepad', caption: t('Manette en main', 'Controller in hand') },
     { id: 'band', icon: 'bass', caption: t('Le groupe EPImusic', 'The EPImusic band') },
+    { id: 'theatre', icon: 'mask', caption: t('Sur les planches', 'On the boards'), pod: t('Archive visuelle : représentation théâtrale. Rideau.', 'Visual archive: a stage play. Curtain.') },
+    { id: 'speech', icon: 'mic', caption: t('Concours d’éloquence', 'Public speaking contest') },
   ]
 
   /* PATH + MUSIC — diplomas and certifications */
@@ -399,12 +451,16 @@ export function buildProfile(t: T) {
       title: t('Myst — jeu 2D à génération procédurale', 'Myst — procedurally generated 2D game'),
       summary: t('Donjon généré aléatoirement à chaque partie.', 'A dungeon randomly generated for every run.'),
       period: t('Janv. – mars 2026', 'Jan. – Mar. 2026'),
-      context: t('Projet de groupe (« Four Man Army Studio »), mené en parallèle du S2.', 'Group project (“Four Man Army Studio”), alongside semester 2.'),
+      context: t('SAE « Jeu » du S2 : projet de groupe (« Four Man Army Studio »), mené en parallèle des cours.', 'Semester 2 game project (SAE): a group project (“Four Man Army Studio”), alongside classes.'),
       objective: t(
         'Créer un jeu d’exploration dont la carte change à chaque partie : salles typées (départ, combat, butin, boss), menu, et un joueur qui se déplace entre les salles.',
         'Build an exploration game whose map changes every run: typed rooms (start, combat, loot, boss), a menu, and a player moving between rooms.',
       ),
       stack: ['Python', 'pygame', 'Pillow', 'Git / GitHub'],
+      choices: t(
+        'Python et pygame parce que toute l’équipe connaissait déjà Python : nous voulions passer notre temps sur le jeu, pas sur le langage. Pillow sert à rendre la carte générée en image, ce qui nous a permis de vérifier l’algorithme d’un coup d’œil avant de l’intégrer au jeu.',
+        'Python and pygame because the whole team already knew Python: we wanted to spend our time on the game, not on the language. Pillow renders the generated map as an image, so we could check the algorithm at a glance before plugging it into the game.',
+      ),
       architecture: [
         { name: 'procedural_gen.py', role: t('Génère la grille de salles et leurs connexions, puis rend la carte en image.', 'Generates the room grid and its connections, then renders the map as an image.') },
         { name: 'player.py', role: t('Déplacements et collisions du joueur.', 'Player movement and collisions.') },
@@ -460,6 +516,10 @@ export function buildProfile(t: T) {
         'Reproduce the core of GNU make: read a Makefile, resolve dependencies between targets and run the required commands in the right order.',
       ),
       stack: ['C', 'POSIX', 'Makefile', t('Tests Python + YAML', 'Python + YAML tests')],
+      choices: t(
+        'Le C était imposé, et c’est tout l’intérêt : gérer soi-même la mémoire et les processus. J’ai choisi des listes chaînées pour les règles, les variables et les dépendances, car leur nombre n’est pas connu avant d’avoir lu le Makefile. Les commandes passent par system() : c’est simple et suffisant pour les tests, mais fork et exec m’auraient donné un contrôle plus fin sur chaque processus.',
+        'C was required, and that is the point: managing memory and processes yourself. I chose linked lists for rules, variables and dependencies because their number is unknown until the Makefile has been read. Commands go through system(): simple and enough for the tests, but fork and exec would have given me finer control over each process.',
+      ),
       architecture: [
         { name: 'parseur()', role: t('Lit le fichier ligne par ligne : variables, règles, dépendances, commandes.', 'Reads the file line by line: variables, rules, dependencies, commands.') },
         { name: 'remplacer_vars()', role: t('Substitue récursivement les ${VAR} dans les commandes.', 'Recursively substitutes ${VAR} in commands.') },
@@ -505,6 +565,10 @@ export function buildProfile(t: T) {
         'Present my whole path (studies, projects, music, commitments, personal life) as the NieR: Automata menu: a mosaic home page, one tab per area, illustrated cards, hacking mode for full files, in French and English.',
       ),
       stack: ['React 19', 'TypeScript', 'Tailwind CSS 4', 'Framer Motion', 'Web Audio', 'SVG', 'Vite'],
+      choices: t(
+        'Un site plutôt qu’un document : on peut le parcourir dans l’ordre qu’on veut, le mettre à jour en quelques minutes, et il montre en lui-même des compétences en développement. React pour découper l’interface en composants réutilisables, TypeScript pour que chaque texte existe forcément dans les deux langues, et du SVG plutôt que des images pour que les illustrations restent nettes et légères.',
+        'A website rather than a document: visitors can browse it in any order, I can update it in minutes, and it shows development skills by itself. React to split the interface into reusable components, TypeScript so that every text is guaranteed to exist in both languages, and SVG instead of images so illustrations stay sharp and light.',
+      ),
       architecture: [
         { name: 'data/profile.ts', role: t('Tout le contenu, en français et en anglais, séparé de l’interface.', 'All content, in French and English, kept apart from the interface.') },
         { name: 'home/Home.tsx', role: t('Page d’accueil : mosaïque de cases de tailles variées.', 'Home page: a mosaic of boxes of varied sizes.') },
@@ -520,6 +584,7 @@ export function buildProfile(t: T) {
       role: [
         t('Direction artistique et structure des contenus.', 'Art direction and content structure.'),
         t('Développé avec l’aide d’un assistant IA (Claude Code) : relecture, choix et adaptation du code.', 'Built with the help of an AI assistant (Claude Code): reviewing, choosing and adapting the code.'),
+        t('Rédaction de tout le contenu, à partir des consignes du cours « Portfolio professionnel ».', 'Wrote all the content, based on the “Professional portfolio” course guidelines.'),
       ],
       challenges: [
         t('Changer de palette sur une seule fenêtre (hacking) : les couleurs passent par des variables CSS redéfinies localement.', 'Switching palette on a single window (hacking): colours go through CSS variables redefined locally.'),
@@ -527,11 +592,11 @@ export function buildProfile(t: T) {
         t('Garder une interface de jeu dense tout en restant lisible sur un écran de 400 px.', 'Keeping a dense game interface readable on a 400 px screen.'),
       ],
       retrospective: t(
-        'Séparer le contenu de l’interface a permis de refondre plusieurs fois le design sans réécrire le texte. La première version ne parlait presque que d’informatique ; la page d’accueil montre maintenant tous les domaines dès l’arrivée.',
-        'Keeping content apart from the interface let me redesign several times without rewriting the text. The first version was almost only about computing; the home page now shows every area from the start.',
+        'Séparer le contenu de l’interface a permis de refondre plusieurs fois le design sans réécrire le texte. La première version ne parlait presque que d’informatique ; la page d’accueil montre maintenant tous les domaines dès l’arrivée. Travailler avec une IA m’a appris à relire et à questionner le code proposé plutôt qu’à l’accepter tel quel, ce que j’avais déjà étudié en cours d’IA générative (hallucinations, biais).',
+        'Keeping content apart from the interface let me redesign several times without rewriting the text. The first version was almost only about computing; the home page now shows every area from the start. Working with an AI taught me to review and question the code it suggests rather than accept it as is, which I had already studied in my generative AI course (hallucinations, bias).',
       ),
       hardSkills: [t('Développement web', 'Web development'), 'TypeScript', 'SVG', 'Web Audio'],
-      softSkills: [t('Créativité', 'Creativity'), t('Esprit critique', 'Critical thinking')],
+      softSkills: [t('Créativité', 'Creativity'), t('Esprit critique', 'Critical thinking'), t('Communication écrite', 'Written communication')],
       links: [{ label: t('Code source', 'Source code'), href: 'https://github.com/CoolLyfe/nier-portfolio' }],
       pod: t('Constat : vous êtes actuellement à l’intérieur de ce projet.', 'Note: you are currently inside this project.'),
     },
@@ -570,9 +635,10 @@ export function buildProfile(t: T) {
       summary: t('Semestre 3 en cours.', 'Semester 3 in progress.'),
       details: [
         t('Programmation C avancée, théorie des langages, mathématiques, physique, anglais.', 'Advanced C programming, formal language theory, mathematics, physics, English.'),
-        t('Cours « Portfolio professionnel » et recherche documentaire.', '“Professional portfolio” course and information research.'),
+        t('Projet de groupe : OCR, reconnaissance de caractères par réseau de neurones.', 'Group project: OCR, character recognition with a neural network.'),
+        t('Communication professionnelle : ce portfolio, puis un projet de recherche en groupe sur la communication interculturelle (recherche documentaire, poster, oral de 20 minutes).', 'Professional communication: this portfolio, then a group research project on intercultural communication (literature search, poster, 20-minute talk).'),
       ],
-      skills: ['C', t('Théorie des langages', 'Language theory')],
+      skills: ['C', t('Théorie des langages', 'Language theory'), t('Recherche documentaire', 'Literature search')],
     },
     {
       id: 'epita-1',
@@ -582,13 +648,21 @@ export function buildProfile(t: T) {
       period: '2025 – 2026',
       title: t('Classe préparatoire intégrée — 1re année', 'Integrated preparatory class — 1st year'),
       place: 'EPITA Toulouse',
-      summary: t('Programmation, algorithmique, mathématiques, architecture.', 'Programming, algorithms, mathematics, computer architecture.'),
+      summary: t('Programmation, algorithmique, mathématiques, électronique, communication. Les deux semestres validés.', 'Programming, algorithms, mathematics, electronics, communication. Both semesters passed.'),
       details: [
-        t('Programmation en Python, C et OCaml ; algorithmique et structures de données.', 'Programming in Python, C and OCaml; algorithms and data structures.'),
-        t('Architecture des ordinateurs, algèbre linéaire, électromagnétisme.', 'Computer architecture, linear algebra, electromagnetism.'),
-        t('Initiation à l’intelligence artificielle (TP).', 'Introduction to artificial intelligence (lab work).'),
+        t('Programmation : C (bases puis traitement de données), Python, OCaml ; listes, matrices, types algébriques, arbres binaires et arbres de recherche.', 'Programming: C (basics, then data processing), Python, OCaml; lists, matrices, algebraic types, binary trees and search trees.'),
+        t('Architecture : numération, algèbre de Boole, logique séquentielle, systèmes à microprocesseurs.', 'Architecture: number systems, Boolean algebra, sequential logic, microprocessor systems.'),
+        t('Mathématiques et physique : probabilités, suites, algèbre linéaire, espaces vectoriels ; mécanique, électronique, électromagnétisme.', 'Maths and physics: probability, sequences, linear algebra, vector spaces; mechanics, electronics, electromagnetism.'),
+        t('IA générative : tokenisation, prompt engineering (chain-of-thought, few-shot), RAG, puis analyse critique des hallucinations et des biais.', 'Generative AI: tokenisation, prompt engineering (chain-of-thought, few-shot), RAG, then a critical look at hallucinations and bias.'),
+        t('Cybersécurité, communication professionnelle et atelier de création d’entreprise à mission.', 'Cybersecurity, professional communication and a workshop on creating a purpose-driven company.'),
+        t('Projets : Myst (SAE jeu, en groupe), minimake (individuel), puis un stage ouvrier de six semaines.', 'Projects: Myst (game project, team), minimake (solo), then a six-week work placement.'),
+        t('Résultats : 60 crédits ECTS sur 60, moyenne au-dessus de celle de la promotion aux deux semestres. Mes meilleurs résultats : IA générative, méthodologie de travail, cybersécurité et communication.', 'Results: 60 ECTS credits out of 60, above the class average in both semesters. My best results: generative AI, study methods, cybersecurity and communication.'),
       ],
-      skills: ['Python', 'C', 'OCaml', t('Algorithmique', 'Algorithms')],
+      skills: ['Python', 'C', 'OCaml', t('Algorithmique', 'Algorithms'), t('IA générative', 'Generative AI')],
+      reflection: t(
+        'La première année m’a surtout appris à travailler : suivre un rythme soutenu, rendre des projets à l’heure et apprendre seul ce qui n’est pas vu en cours. Je suis à l’aise en programmation et en communication ; les sciences de l’ingénieur (électronique, physique) et l’analyse en mathématiques me demandent plus d’efforts, et ce sont mes priorités pour cette année.',
+        'First year mostly taught me how to work: keeping up a fast pace, delivering projects on time and learning on my own what isn’t covered in class. I’m comfortable with programming and communication; engineering sciences (electronics, physics) and calculus take me more effort, and they are my priorities this year.',
+      ),
     },
     {
       id: 'bac',
@@ -732,6 +806,28 @@ export function buildProfile(t: T) {
       skills: [t('Créativité', 'Creativity'), t('Travail en équipe', 'Teamwork')],
     },
     {
+      id: 'palace',
+      short: t('STAGE — LE PALACE', 'INTERNSHIP — LE PALACE'),
+      group: 'job',
+      icon: 'case',
+      period: t('Été 2026 — 6 semaines', 'Summer 2026 — 6 weeks'),
+      title: t('Stage ouvrier — bar-tabac', 'Work placement — bar and tobacconist'),
+      place: t('Le Palace, Bagnols-sur-Cèze', 'Le Palace, Bagnols-sur-Cèze'),
+      summary: t('Six semaines de stage ouvrier (EPITA, 1re année) : tabac, bar, service, PMU, presse.', 'A six-week work placement (EPITA, 1st year): tobacco counter, bar, table service, betting, newspapers.'),
+      details: [
+        t('Stage ouvrier de première année à l’EPITA, réalisé dans un bar-tabac de Bagnols-sur-Cèze.', 'EPITA first-year work placement, in a bar and tobacconist in Bagnols-sur-Cèze.'),
+        t('Poste principal : le comptoir tabac. J’ai appris plusieurs centaines de références pour servir vite et sans erreur.', 'Main post: the tobacco counter. I learned several hundred product references to serve quickly and without mistakes.'),
+        t('Polyvalence : bar, service en salle, PMU, presse. Passer d’un poste à l’autre selon l’affluence.', 'Versatility: bar, table service, betting counter, newspapers. Moving between posts depending on the rush.'),
+        t('Contact permanent avec une clientèle d’habitués comme de passage.', 'Constant contact with customers, regulars and passers-by alike.'),
+      ],
+      skills: [t('Relation client', 'Customer relations'), t('Polyvalence', 'Versatility'), t('Mémorisation', 'Memorisation'), t('Rigueur', 'Rigour'), t('Fiabilité', 'Reliability')],
+      reflection: t(
+        'Ce stage n’avait rien d’informatique, et c’est ce qui le rend utile : j’ai vu un commerce de l’intérieur, avec ses contraintes de rythme, de stock et de clientèle. Mémoriser des centaines de références, c’est organiser l’information pour la retrouver vite, un réflexe que je retrouve en programmation. J’en retiens surtout qu’un client ne voit pas le travail en coulisses, seulement le résultat : un futur logiciel aura des utilisateurs qui jugeront de la même façon.',
+        'This placement had nothing to do with computing, and that is what makes it useful: I saw a business from the inside, with its constraints of pace, stock and customers. Memorising hundreds of references means organising information to find it fast, a reflex I use in programming too. Above all, I learned that customers never see the work behind the counter, only the result: the users of my future software will judge it the same way.',
+      ),
+      pod: t('Base de données interne : plusieurs centaines de références tabac. Indexation : manuelle.', 'Internal database: several hundred tobacco references. Indexing: manual.'),
+    },
+    {
       id: 'lavage',
       group: 'job',
       icon: 'case',
@@ -757,22 +853,104 @@ export function buildProfile(t: T) {
     {
       id: 'eloquence',
       short: t('ÉLOQUENCE', 'ELOQUENCE'),
-      group: 'contest',
+      group: 'speech',
       icon: 'mic',
-      period: '2023 – 2024',
+      period: t('2022 – 2025 (seconde à terminale)', '2022 – 2025 (10th to 12th grade)'),
       title: t('Concours d’éloquence', 'Public speaking contests'),
-      place: t('Dont Lions Club', 'Including the Lions Club'),
-      summary: t('5e sur 18 participants au concours du Lions Club.', '5th out of 18 at the Lions Club contest.'),
+      place: t('Lycée, dont le Lions Club', 'High school, including the Lions Club'),
+      summary: t('Trois ans de concours d’éloquence, de la seconde à la terminale. 5e sur 18 au Lions Club.', 'Three years of public speaking contests, from 10th to 12th grade. 5th of 18 at the Lions Club.'),
       details: [
-        t('Participation à plusieurs concours d’éloquence.', 'Took part in several public speaking contests.'),
-        t('Lions Club : 5e sur 18 participants.', 'Lions Club: 5th out of 18.'),
-        t(
-          'Sujet principal : une citation de Bernard Clavel, « Qui n’a jamais pétri et enfourné ne connaît point la valeur du pain ». Autre sujet : « Pourquoi ? ».',
-          'Main topic: a quote by Bernard Clavel, “Whoever has never kneaded and baked does not know the value of bread”. Another topic: “Why?”.',
-        ),
+        t('Des concours d’éloquence chaque année, de la seconde à la terminale, sur des sujets variés.', 'Public speaking contests every year, from 10th to 12th grade, on a range of topics.'),
+        t('Lions Club : 5e sur 18 participants, sur une citation de Bernard Clavel.', 'Lions Club: 5th out of 18, on a quote by Bernard Clavel.'),
+        t('Des formats variés : sujet libre, thèse imposée face à un adversaire, mots imposés à placer dans le discours.', 'Varied formats: open topic, a thesis imposed against an opponent, set words to fit into the speech.'),
+        t('Chaque texte écrit pour l’oral : pauses, gestes et accessoires notés dans la marge.', 'Every text written for the stage: pauses, gestures and props noted in the margin.'),
       ],
-      skills: [t('Prise de parole', 'Public speaking'), t('Argumentation', 'Argumentation')],
+      skills: [t('Prise de parole', 'Public speaking'), t('Argumentation', 'Argumentation'), t('Écriture', 'Writing'), t('Confiance en soi', 'Self-confidence')],
+      reflection: t(
+        'L’éloquence m’a appris à construire un propos : partir d’une définition, dérouler un plan, puis surprendre avec un exemple inattendu. Défendre une thèse qu’on ne m’avait pas laissé choisir m’a aussi appris à argumenter au-delà de mon avis. C’est ce que j’attends d’un ingénieur : expliquer un choix technique et convaincre ceux qui ne le partagent pas encore.',
+        'Public speaking taught me to build an argument: start from a definition, follow a plan, then surprise with an unexpected example. Defending a thesis I hadn’t been allowed to choose also taught me to argue beyond my own opinion. That is what I expect from an engineer: explaining a technical choice and convincing those who don’t share it yet.',
+      ),
+      speeches: [
+        {
+          id: 'pain',
+          title: t('« Qui n’a jamais pétri et enfourné ne connaît point ce que coûte le pain »', '“Whoever has never kneaded and baked does not know what bread costs”'),
+          context: t('Concours du Lions Club, citation de Bernard Clavel. Écrit à 16 ans.', 'Lions Club contest, a quote by Bernard Clavel. Written at 16.'),
+          angle: t(
+            'Le pain n’est pas cher, il est précieux. Je file la métaphore du pétrissage et de la cuisson jusqu’à l’alphabet (26 lettres, de Zola à Victor Hugo), puis jusqu’à mon propre texte : l’écrire, c’est pétrir ; vous le présenter, c’est l’enfourner. Avec un vieux morceau de pain sorti de ma poche en guise d’accessoire.',
+            'Bread isn’t expensive, it is precious. I carry the metaphor of kneading and baking over to the alphabet (26 letters, from Zola to Victor Hugo), then to my own speech: writing it is kneading, presenting it is baking. With an old piece of bread pulled from my pocket as a prop.',
+          ),
+          quote: t('Écrire et lire, c’est pétrir et enfourner l’alphabet.', 'Writing and reading is kneading and baking the alphabet.'),
+          result: t('5e / 18', '5th / 18'),
+        },
+        {
+          id: 'pourquoi',
+          title: t('« Pourquoi ? »', '“Why?”'),
+          context: t('Concours d’éloquence, sujet libre en un mot.', 'Public speaking contest, an open one-word topic.'),
+          angle: t(
+            'Le « pourquoi » comme moteur de l’humanité : les premiers poissons sortis de l’eau, la question qui a mené Volta à la pile électrique, puis Ève devant l’arbre de la connaissance. Une ouverture en silence, comme si je me demandais moi-même pourquoi j’étais là.',
+            '“Why” as the engine of humanity: the first fish to leave the water, the question that led Volta to the battery, then Eve before the tree of knowledge. It opens in silence, as if I were asking myself why I was there.',
+          ),
+          quote: t('Souvent, nous n’avons pas de réponse à ce « pourquoi », mais c’est justement ça qui nous fait avancer.', 'Often we have no answer to that “why”, and that is exactly what keeps us moving.'),
+        },
+        {
+          id: 'jeunesse',
+          title: t('« La jeunesse est épouvantable »', '“Youth is dreadful”'),
+          context: t('Joute en duo, mai 2024 : l’un défend la thèse, l’autre l’antithèse. La thèse m’a été imposée.', 'A duo debate, May 2024: one argues the thesis, the other the antithesis. I was given the thesis.'),
+          angle: t(
+            'Défendre avec conviction, et un peu d’ironie, une position qui n’est pas la mienne : la jeunesse vue comme l’âge où l’on subit, puis comme la génération que les adultes accusent de tous les maux.',
+            'Defending with conviction, and some irony, a position that isn’t mine: youth as the age when you just endure, then as the generation adults blame for everything.',
+          ),
+          quote: t('Elle est le long et interminable commencement de notre existence.', 'It is the long, endless beginning of our existence.'),
+        },
+        {
+          id: 'courbe',
+          title: t('« La courbe est la ligne géométrique de la beauté et du bonheur »', '“The curve is the geometric line of beauty and happiness”'),
+          context: t(
+            'Sujet imposé, avec sept mots à placer : chien de chasse, sucre d’orge, matériellement, ineptie, morphologie, outrecuidance, reliefs.',
+            'Set topic, with seven words to fit in: hunting dog, barley sugar, materially, nonsense, morphology, arrogance, reliefs.',
+          ),
+          angle: t(
+            'Commencer par réduire la courbe à un simple trait sans âme, puis tout renverser d’un « Quelle ineptie ! » : une amitié sans conflits, un monde sans reliefs seraient sans saveur.',
+            'Start by reducing the curve to a soulless line, then turn it all around with a “What nonsense!”: a friendship without conflicts, a world without reliefs would have no flavour.',
+          ),
+          quote: t('Le bonheur, la beauté se trouvent dans les moindres reliefs du trait que nous traçons, et qu’on appelle la vie.', 'Happiness and beauty lie in the smallest reliefs of the line we draw, and call life.'),
+        },
+        {
+          id: 'chocolat',
+          title: t('« La vie est une boîte de chocolats »', '“Life is a box of chocolates”'),
+          context: t('Pour le plaisir : un défi lancé en réunion de famille, thèse imposée.', 'Just for fun: a challenge at a family gathering, thesis imposed.'),
+          angle: t(
+            'Partir de Forrest Gump, décrire la boîte comme un objet d’artisan où chaque chocolat est unique, puis retourner l’image vers le public : nous aussi sommes faits de quelques ingrédients et d’une histoire propre.',
+            'Start from Forrest Gump, describe the box as a crafted object where every chocolate is unique, then turn the image to the audience: we too are made of a few ingredients and a story of our own.',
+          ),
+          quote: t('Nous aussi avons eu notre propre histoire, spécifique à où nous sommes nés, et où nous avons vécu.', 'We too have had our own story, specific to where we were born and where we have lived.'),
+        },
+      ],
+      photo: 'speech',
       pod: t('Corrélation détectée : un discours sur le pain, une passion pour la pâtisserie.', 'Correlation detected: a speech about bread, a passion for baking.'),
+    },
+    {
+      id: 'theatre',
+      short: t('THÉÂTRE', 'THEATRE'),
+      group: 'speech',
+      icon: 'mask',
+      period: t('Collège — 4 ans', 'Middle school — 4 years'),
+      title: t('Théâtre', 'Theatre'),
+      place: 'Collège Saint Jean',
+      summary: t('Quatre ans de théâtre au collège et trois pièces jouées en public.', 'Four years of theatre in middle school and three plays performed in public.'),
+      details: [
+        t('Quatre années de théâtre au collège.', 'Four years of theatre in middle school.'),
+        t('« La Comedia del Paris », pièce écrite par ma professeure.', '“La Comedia del Paris”, a play written by my teacher.'),
+        t('« La Gloire de mon père », d’après Marcel Pagnol, adaptée par ma professeure.', '“La Gloire de mon père”, after Marcel Pagnol, adapted by my teacher.'),
+        t('« Le Médecin », pièce écrite par ma professeure.', '“Le Médecin”, a play written by my teacher.'),
+      ],
+      skills: [t('Prise de parole', 'Public speaking'), t('Mémorisation', 'Memorisation'), t('Travail en équipe', 'Teamwork'), t('Confiance en soi', 'Self-confidence')],
+      reflection: t(
+        'Le théâtre a été ma première scène : apprendre un texte, le jouer devant une salle et compter sur les autres comédiens. C’est là que j’ai pris l’habitude de parler en public, une aisance que j’ai retrouvée ensuite en concours d’éloquence.',
+        'Theatre was my first stage: learning lines, performing them in front of an audience and relying on the other actors. That is where I got used to speaking in public, an ease I found again in public speaking contests.',
+      ),
+      photo: 'theatre',
+      pod: t('Trois pièces, aucun trou de mémoire signalé dans les archives.', 'Three plays, no memory lapse recorded in the archives.'),
     },
     {
       id: 'hackathon',
@@ -891,26 +1069,113 @@ export function buildProfile(t: T) {
     { id: 'soft-team', name: t('Travail en équipe', 'Teamwork'), icon: 'chip', detail: t('Projets de groupe, BDL, orchestre, groupe EPImusic.', 'Group projects, student council, orchestra, EPImusic band.'), proofs: ['myst', 'bdl', 'orchestre', 'epimusic'] },
     { id: 'soft-rigour', name: t('Rigueur', 'Rigour'), icon: 'chip', detail: t('14 ans de conservatoire, tests automatiques, confidentialité des documents.', '14 years of conservatoire, automated tests, document confidentiality.'), proofs: ['conservatoire', 'minimake', 'cabinet'] },
     { id: 'soft-grit', name: t('Persévérance', 'Perseverance'), icon: 'chip', detail: t('Volonté et engagement : années de conservatoire, débogage jusqu’au bout.', 'Determination: years of conservatoire, debugging to the end.'), proofs: ['conservatoire', 'minimake'] },
-    { id: 'soft-confidence', name: t('Confiance en soi', 'Self-confidence'), icon: 'chip', detail: t('Jouer seul devant un public, défendre une idée en concours.', 'Playing solo in front of an audience, defending an idea in a contest.'), proofs: ['concerts', 'eloquence'] },
-    { id: 'soft-speaking', name: t('Prise de parole', 'Public speaking'), icon: 'chip', detail: t('Concours d’éloquence, présentation de cours.', 'Public speaking contests, giving lessons.'), proofs: ['eloquence', 'tutorat'] },
+    { id: 'soft-confidence', name: t('Confiance en soi', 'Self-confidence'), icon: 'chip', detail: t('Jouer seul devant un public, monter sur scène, défendre une idée en concours.', 'Playing solo in front of an audience, acting on stage, defending an idea in a contest.'), proofs: ['concerts', 'theatre', 'eloquence'] },
+    { id: 'soft-speaking', name: t('Prise de parole', 'Public speaking'), icon: 'chip', detail: t('Quatre ans de théâtre, trois ans de concours d’éloquence, des cours donnés.', 'Four years of theatre, three years of public speaking contests, lessons given.'), proofs: ['theatre', 'eloquence', 'tutorat'] },
     { id: 'soft-lead', name: t('Leadership', 'Leadership'), icon: 'chip', detail: t('Co-présidence du BDL, présidence d’un groupe EPImusic.', 'Student council co-president, EPImusic band president.'), proofs: ['bdl', 'epimusic'] },
     { id: 'soft-adapt', name: t('Adaptabilité', 'Adaptability'), icon: 'chip', detail: t('Passer de la guitare à la basse pour les besoins du groupe.', 'Switching from guitar to bass for the band’s needs.'), proofs: ['epimusic'] },
     { id: 'soft-teach', name: t('Pédagogie', 'Teaching'), icon: 'chip', detail: t('Transmettre la programmation à des débutants.', 'Teaching programming to beginners.'), proofs: ['tutorat'] },
+    { id: 'soft-client', name: t('Relation client', 'Customer relations'), icon: 'chip', detail: t('Accueillir, conseiller et servir, y compris dans le rush.', 'Welcoming, advising and serving, rush hour included.'), proofs: ['palace', 'lavage'] },
+    { id: 'soft-versatile', name: t('Polyvalence', 'Versatility'), icon: 'chip', detail: t('Passer d’un poste à l’autre selon les besoins : tabac, bar, service ; guitare puis basse.', 'Switching posts as needed: tobacco counter, bar, service; guitar, then bass.'), proofs: ['palace', 'epimusic'] },
+  ]
+
+  /* PROFILE — the three key competences, with proofs and an honest review */
+  const keySkills: KeySkill[] = [
+    {
+      id: 'key-code',
+      icon: 'code',
+      name: t('Concevoir et programmer un logiciel', 'Designing and programming software'),
+      summary: t('Du besoin au programme qui fonctionne, testé, en C comme en Python.', 'From the need to a working, tested program, in C as in Python.'),
+      why: t(
+        'C’est le cœur du métier d’ingénieur en informatique : comprendre un besoin, choisir une structure de données, écrire un code juste et le faire évoluer. Savoir le faire en C, au plus près de la machine, aide à comprendre tout le reste.',
+        'It is the core of a software engineer’s job: understanding a need, choosing a data structure, writing correct code and making it evolve. Doing it in C, close to the machine, helps understand everything else.',
+      ),
+      level: 3,
+      proofs: ['minimake', 'myst', 'portfolio', 'epita-1'],
+      mastered: [
+        t('Mener seul un projet en C de bout en bout : parsing, structures chaînées, gestion de la mémoire (minimake).', 'Carrying a C project alone from start to finish: parsing, linked structures, memory management (minimake).'),
+        t('Concevoir un algorithme sur un graphe et prouver qu’il marche : toutes les salles de Myst sont atteignables.', 'Designing a graph algorithm and showing it works: every room in Myst is reachable.'),
+        t('Utiliser Git en équipe : branches, fusions, résolution de conflits.', 'Using Git as a team: branches, merges, resolving conflicts.'),
+      ],
+      gaps: [
+        t('Je dépends encore des tests fournis au lieu d’écrire les miens.', 'I still rely on the provided tests instead of writing my own.'),
+        t('Je code parfois avant d’avoir fixé l’architecture, ce qui coûte des corrections tardives.', 'I sometimes code before settling the architecture, which costs late fixes.'),
+        t('Mon code est peu documenté, et je n’utilise pas encore systématiquement Valgrind ou gdb.', 'My code is lightly documented, and I don’t yet use Valgrind or gdb systematically.'),
+      ],
+      next: [
+        t('Sur l’OCR : écrire les interfaces entre modules avant de coder, et des tests pour chacun.', 'On the OCR project: write the interfaces between modules before coding, and tests for each one.'),
+        t('Passer chaque projet C sous Valgrind avant de le rendre.', 'Run every C project through Valgrind before handing it in.'),
+        t('Un README clair pour chaque dépôt.', 'A clear README for every repository.'),
+      ],
+    },
+    {
+      id: 'key-team',
+      icon: 'flag',
+      name: t('Travailler en équipe et prendre des responsabilités', 'Working as a team and taking responsibility'),
+      summary: t('Organiser, répartir, s’adapter à ce dont le groupe a besoin.', 'Organising, sharing the work, adapting to what the group needs.'),
+      why: t(
+        'Un logiciel se construit à plusieurs : il faut se répartir le travail, faire tenir les morceaux ensemble et parfois prendre le rôle que personne ne prend. C’est aussi ce qui permettra, plus tard, d’encadrer une équipe.',
+        'Software is built together: work must be shared out, the pieces must fit, and sometimes you take the role nobody else takes. It is also what will later make it possible to lead a team.',
+      ),
+      level: 4,
+      proofs: ['myst', 'epimusic', 'bdl', 'orchestre'],
+      mastered: [
+        t('Prendre des responsabilités : co-président du bureau des lycéens, président d’un groupe EPImusic.', 'Taking responsibility: student council co-president, president of an EPImusic band.'),
+        t('Organiser un événement avec une équipe : fêtes de Noël et de fin d’année du lycée.', 'Organising an event with a team: the school’s Christmas and end-of-year parties.'),
+        t('M’adapter aux besoins du groupe : passer de la guitare à la basse ; gérer le dépôt et les fusions de Myst.', 'Adapting to what the group needs: switching from guitar to bass; handling Myst’s repository and merges.'),
+        t('Jouer ensemble : quatre ans d’orchestre, à écouter les autres pupitres.', 'Playing together: four years of orchestra, listening to the other sections.'),
+      ],
+      gaps: [
+        t('Fixer une organisation claire dès le départ : sur Myst, l’architecture est venue trop tard.', 'Setting a clear organisation from the start: on Myst, the architecture came too late.'),
+        t('Mieux tracer les échanges : messages de commit explicites, décisions écrites.', 'Keeping a better record: explicit commit messages, written decisions.'),
+      ],
+      next: [
+        t('Sur l’OCR : une répartition des tâches et des interfaces écrites dès la première semaine.', 'On the OCR project: task sharing and written interfaces from the first week.'),
+        t('Suivre le travail du groupe avec des tickets (issues) plutôt qu’à l’oral.', 'Track the group’s work with issues rather than by word of mouth.'),
+      ],
+    },
+    {
+      id: 'key-comm',
+      icon: 'mic',
+      name: t('Communiquer et transmettre', 'Communicating and passing knowledge on'),
+      summary: t('Parler en public, expliquer à des débutants, échanger avec des clients.', 'Speaking in public, explaining to beginners, dealing with customers.'),
+      why: t(
+        'Un ingénieur doit défendre ses choix, présenter un projet, former des collègues et comprendre ce que veut un utilisateur. Une bonne idée mal expliquée n’est pas retenue.',
+        'An engineer has to defend choices, present a project, train colleagues and understand what a user wants. A good idea badly explained is not kept.',
+      ),
+      level: 4,
+      proofs: ['tutorat', 'eloquence', 'theatre', 'palace'],
+      mastered: [
+        t('Prendre la parole devant un public : quatre ans de théâtre, trois ans de concours d’éloquence (5e sur 18 au Lions Club), concerts en solo.', 'Speaking in front of an audience: four years of theatre, three years of public speaking contests (5th of 18 at the Lions Club), solo concerts.'),
+        t('Adapter une explication à des débutants : un an de tutorat Python pour des collégiens.', 'Adapting an explanation to beginners: a year teaching Python to middle schoolers.'),
+        t('Échanger avec des clients, vite et clairement : stage au Palace.', 'Dealing with customers, quickly and clearly: internship at Le Palace.'),
+        t('Les cours de communication font partie de mes meilleurs résultats à l’EPITA.', 'Communication courses are among my best results at EPITA.'),
+      ],
+      gaps: [
+        t('L’écrit technique : documentation, rapports, README.', 'Technical writing: documentation, reports, READMEs.'),
+        t('L’anglais professionnel, aujourd’hui au niveau B2.', 'Professional English, currently at B2 level.'),
+      ],
+      next: [
+        t('L’oral de 20 minutes du projet de recherche du S3.', 'The 20-minute talk of the semester 3 research project.'),
+        t('Documenter chaque projet comme si quelqu’un d’autre devait le reprendre.', 'Document every project as if someone else had to take it over.'),
+        t('Lire et écrire davantage en anglais technique.', 'Read and write more technical English.'),
+      ],
+    },
   ]
 
   const selfAssessment = {
     strengths: [
-      t('Aisance à l’oral et goût de la transmission (tutorat, éloquence, scène).', 'At ease speaking and enjoy passing knowledge on (tutoring, eloquence, stage).'),
+      t('Aisance à l’oral et goût de la transmission (tutorat, éloquence, théâtre, scène).', 'At ease speaking and enjoy passing knowledge on (tutoring, eloquence, theatre, stage).'),
       t('Rigueur et constance acquises en 14 ans de conservatoire.', 'Rigour and consistency built over 14 years of conservatoire.'),
       t('Autonomie sur des projets techniques de bout en bout.', 'Autonomous on technical projects from start to finish.'),
       t('Habitude du travail collectif et des responsabilités (BDL, orchestre, EPImusic).', 'Used to teamwork and responsibility (student council, orchestra, EPImusic).'),
+      t('Polyvalence et sens du service, confirmés en stage.', 'Versatility and customer care, confirmed during my internship.'),
     ],
     improvements: [
       t('Documenter davantage mon code et écrire des messages de commit explicites.', 'Document my code more and write clearer commit messages.'),
       t('Planifier l’architecture avant de coder, surtout en équipe.', 'Plan the architecture before coding, especially in a team.'),
       t('Écrire mes propres tests plutôt que de dépendre de ceux fournis.', 'Write my own tests instead of relying on the provided ones.'),
       t('Choisir une spécialité : explorer plusieurs domaines pour trouver celui qui me correspond.', 'Choose a speciality: explore several fields to find the one that suits me.'),
-      t('Acquérir une première expérience en entreprise.', 'Gain a first professional experience.'),
+      t('Renforcer les sciences de l’ingénieur (électronique, physique) et l’analyse, mes matières les plus difficiles.', 'Strengthen engineering sciences (electronics, physics) and calculus, my hardest subjects.'),
     ],
   }
 
@@ -920,6 +1185,8 @@ export function buildProfile(t: T) {
       t('Systèmes, Linux et bas niveau', 'Systems, Linux and low level'),
       t('Développement de jeux', 'Game development'),
       t('Outils et automatisation', 'Tools and automation'),
+      t('Intelligence artificielle, avec un regard critique sur ses limites', 'Artificial intelligence, with a critical eye on its limits'),
+      t('Cybersécurité, découverte en première année', 'Cybersecurity, discovered in first year'),
     ],
     next: t(
       'Poursuivre en cycle ingénieur à l’EPITA, explorer plusieurs domaines avant de choisir ma spécialité, et devenir ingénieur.',
@@ -930,6 +1197,8 @@ export function buildProfile(t: T) {
   const contact = {
     email: 'louis.leymonie@outlook.fr',
     github: 'https://github.com/CoolLyfe',
+    /** my own CV layout (public/), phone and postal address removed */
+    cv: 'Louis_Leymonie_CV.pdf',
     location: 'Toulouse, France',
   }
 
@@ -949,6 +1218,7 @@ export function buildProfile(t: T) {
     experience,
     hardSkills,
     softSkills,
+    keySkills,
     selfAssessment,
     outlook,
     contact,

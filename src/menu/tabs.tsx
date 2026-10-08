@@ -16,7 +16,7 @@ import { useLang } from '../i18n'
    (see menu/details.tsx).
    ------------------------------------------------------------------ */
 
-export const TAB_IDS: TabId[] = ['home', 'path', 'projects', 'music', 'commitments', 'life', 'profile']
+export const TAB_IDS: TabId[] = ['home', 'profile', 'path', 'projects', 'music', 'commitments', 'life']
 
 export interface Entry {
   id: string
@@ -235,7 +235,16 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
     code: l.period,
     detail: true,
     pod: l.pod,
-    macro: <Card glyph={l.icon} over={`${l.place} // ${l.period}`} title={l.title} text={l.summary} tags={l.skills} />,
+    macro: (
+      <Card
+        glyph={l.icon}
+        photo={P.gallery.find((g) => g.id === l.photo && g.src)}
+        over={`${l.place} // ${l.period}`}
+        title={l.title}
+        text={l.summary}
+        tags={l.skills}
+      />
+    ),
   })
 
   const diploma = (d: Diploma): Entry => {
@@ -450,7 +459,13 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
     case 'commitments':
       return [
         { id: 'lead', label: t('Responsabilités', 'Responsibilities'), glyph: 'flag', entries: by(P.experience, 'lead').map((x) => logEntry(x, t('Engagement', 'Commitment'))) },
-        { id: 'job', label: t('Emplois', 'Jobs'), glyph: 'case', entries: by(P.experience, 'job').map((x) => logEntry(x, t('Emploi', 'Job'))) },
+        {
+          id: 'job',
+          label: t('Stage & emplois', 'Internship & jobs'),
+          glyph: 'case',
+          entries: by(P.experience, 'job').map((x) => logEntry(x, x.id === 'palace' ? t('Stage', 'Internship') : t('Emploi', 'Job'))),
+        },
+        { id: 'speech', label: t('Oral & théâtre', 'Speech & theatre'), glyph: 'mic', entries: by(P.experience, 'speech').map((x) => logEntry(x, t('Prise de parole', 'Speaking'))) },
         { id: 'contest', label: t('Concours', 'Contests'), glyph: 'star', entries: by(P.experience, 'contest').map((x) => logEntry(x, t('Concours', 'Contest'))) },
       ]
 
@@ -553,6 +568,10 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
                   <div className="desc-box mt-5">
                     <SquareList items={P.about.objectives} />
                   </div>
+                  <div className="mt-5">
+                    <p className="label mb-2">{t('Comment le parcourir', 'How to browse it')}</p>
+                    <SquareList items={P.about.guide} />
+                  </div>
                   <p className="label mt-4 leading-relaxed normal-case">
                     {t(
                       'Les fiches qui proposent un dossier complet s’ouvrent avec [A] ou le bouton « Ouvrir le dossier ».',
@@ -565,6 +584,34 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
           ],
         },
         {
+          id: 'key',
+          label: t('Piliers', 'Core skills'),
+          glyph: 'target',
+          entries: P.keySkills.map((k, n) => ({
+            id: k.id,
+            label: k.name,
+            meta: `0${n + 1}`,
+            desc: k.summary,
+            title: t('Compétence clé', 'Key competence'),
+            code: `CORE_0${n + 1}`,
+            detail: true,
+            macro: (
+              <Card
+                glyph={k.icon}
+                over={`${t('Compétence clé', 'Key competence')} 0${n + 1}`}
+                title={k.name}
+                stats={[{ k: t('Maîtrise', 'Mastery'), v: <Meter value={k.level} /> }, proofStat(P, t, k.proofs)]}
+                text={k.why}
+              >
+                <div className="desc-box mt-4">
+                  <p className="label mb-1.5">{t('Prochaine étape', 'Next step')}</p>
+                  <p className="leading-relaxed">{k.next[0]}</p>
+                </div>
+              </Card>
+            ),
+          })),
+        },
+        {
           id: 'soft',
           label: t('Soft skills', 'Soft skills'),
           glyph: 'chip',
@@ -575,6 +622,37 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
           label: t('Bilan', 'Assessment'),
           glyph: 'star',
           entries: [
+            {
+              id: 'assets',
+              label: t('Atouts', 'Strengths'),
+              meta: '+α',
+              desc: t('Ce qui me distingue, chaque atout relié à ses preuves.', 'What sets me apart, each strength linked to its proofs.'),
+              title: t('Atouts', 'Strengths'),
+              code: '+α',
+              pod: t('Analyse comparative : profil au-delà de la moyenne. Chaque atout est vérifiable.', 'Comparative analysis: above-average profile. Every strength can be checked.'),
+              macro: (
+                <Card glyph="star" over={t('Ce qui me distingue', 'What sets me apart')} title={t('Atouts', 'Strengths')}>
+                  <ul className="mt-5 space-y-5">
+                    {P.strengths.map((x) => (
+                      <li key={x.id} className="flex gap-3">
+                        <span className="now-icon">
+                          <GlyphIcon name={x.icon} className="h-[1.1rem] w-[1.1rem]" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-medium">{x.title}</p>
+                          <p className="mt-0.5 leading-snug text-dim">{x.text}</p>
+                          <p className="mt-1.5 flex flex-wrap gap-1.5">
+                            {x.proofs.map((id) => (
+                              <Tag key={id}>{findProof(P, id)?.label ?? id}</Tag>
+                            ))}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              ),
+            },
             {
               id: 'strengths',
               label: t('Points forts', 'Strengths'),
@@ -663,19 +741,22 @@ export function categoriesFor(tab: TabId, P: Profile, t: T, s: Actions): Categor
               id: 'export',
               label: t('Exporter le CV', 'Export the CV'),
               meta: 'DATA',
-              desc: t('Télécharger le CV : PDF d’une page, ou version structurée.', 'Download the CV: a one-page PDF, or a structured version.'),
+              desc: t('Télécharger le CV : PDF, ou version structurée.', 'Download the CV: PDF, or a structured version.'),
               title: 'Export',
               code: 'DATA',
-              onConfirm: () => window.print(),
+              onConfirm: () => window.open(P.contact.cv, '_blank'),
               macro: (
                 <Card
                   glyph="download"
                   over="Export"
                   title={t('Exporter le CV', 'Export the CV')}
-                  text={t('Version structurée du CV, générée à partir des données de ce portfolio, dans la langue affichée.', 'A structured version of the CV, generated from this portfolio’s data, in the current language.')}
+                  text={t(
+                    'Mon CV en PDF, ou une version structurée générée à partir des données de ce portfolio, dans la langue affichée.',
+                    'My CV as a PDF (in French), or a structured version generated from this portfolio’s data, in the current language.',
+                  )}
                 >
                   <div className="mt-5 flex flex-wrap gap-2">
-                    <ActionButton onClick={() => window.print()}>{t('PDF (une page)', 'PDF (one page)')}</ActionButton>
+                    <ActionButton href={P.contact.cv}>PDF</ActionButton>
                     <ActionButton onClick={() => download('Louis_Leymonie_CV.md', cvMarkdown(P, t), 'text/markdown')}>Markdown (.md)</ActionButton>
                     <ActionButton onClick={() => download('Louis_Leymonie_CV.json', cvJson(P), 'application/json')}>JSON (.json)</ActionButton>
                   </div>

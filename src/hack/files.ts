@@ -87,7 +87,7 @@ export function buildFiles(P: Profile, t: T): VFile[] {
       encrypted: true,
       content: () => [
         'ARCHIVE: ORATOR',
-        t('Concours d’éloquence 2023–2024.', 'Public speaking contests 2023–2024.'),
+        t('Concours d’éloquence de la seconde à la terminale (2022–2025). Quatre ans de théâtre au collège.', 'Public speaking contests from 10th to 12th grade (2022–2025). Four years of theatre in middle school.'),
         t('Lions Club : 5e sur 18 participants.', 'Lions Club: 5th out of 18.'),
       ],
     },

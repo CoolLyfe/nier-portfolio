@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
-import { Field, SquareList, Tag } from '../components/ui'
+import { Field, Meter, SquareList, Tag } from '../components/ui'
 import type { T } from '../data/lang'
-import type { LogEntry, Profile, Project, Skill, TabId } from '../data/profile'
+import type { KeySkill, LogEntry, Profile, Project, Skill, TabId } from '../data/profile'
 import { useLang } from '../i18n'
 import { Tracks, findProof } from './tabs'
 
-/* Full dossiers (hacking palette). `renderDetail` resolves any entry with a detail. */
+/* Full dossiers (hacking void palette). `renderDetail` resolves any entry with a detail. */
 
 function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -55,6 +55,7 @@ function ProjectDetail({ p }: { p: Project }) {
         <Field k={t('Contexte', 'Context')} v={p.context} />
         <Field k={t('Objectif', 'Goal')} v={p.objective} />
         <Field k={t('Technologies', 'Stack')} v={<Tags items={p.stack} />} />
+        {p.choices && <Field k={t('Choix techniques', 'Technical choices')} v={p.choices} />}
       </dl>
 
       {(p.architecture.length > 0 || p.role.length > 0) && (
@@ -125,13 +126,14 @@ const groupLabel = (g: LogEntry['group'], t: T) =>
     music: t('MUSIQUE // CONSERVATOIRE', 'MUSIC // CONSERVATOIRE'),
     stage: t('MUSIQUE // SCÈNE', 'MUSIC // STAGE'),
     lead: t('ENGAGEMENTS // RESPONSABILITÉ', 'COMMITMENTS // RESPONSIBILITY'),
-    job: t('ENGAGEMENTS // EMPLOI', 'COMMITMENTS // JOB'),
+    job: t('ENGAGEMENTS // STAGE & EMPLOI', 'COMMITMENTS // INTERNSHIP & JOB'),
+    speech: t('ENGAGEMENTS // ORAL & THÉÂTRE', 'COMMITMENTS // SPEECH & THEATRE'),
     contest: t('ENGAGEMENTS // CONCOURS', 'COMMITMENTS // CONTEST'),
   })[g]
 
 function LogDetail({ l }: { l: LogEntry }) {
   const { P, t } = useLang()
-  const quest = l.group === 'lead' || l.group === 'job' || l.group === 'contest'
+  const quest = l.group === 'lead' || l.group === 'job' || l.group === 'speech' || l.group === 'contest'
   const musicDiplomas = P.diplomas.filter((d) => d.group === 'music')
   return (
     <div className="space-y-6">
@@ -159,6 +161,28 @@ function LogDetail({ l }: { l: LogEntry }) {
           </Block>
         </>
       )}
+      {l.speeches && (
+        <Block title={`${t('Discours', 'Speeches')} (${l.speeches.length})`}>
+          <div className="space-y-4">
+            {l.speeches.map((x) => (
+              <article key={x.id} className="bg-item px-4 py-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-medium">{x.title}</p>
+                  {x.result && <p className="label flex-none">{x.result}</p>}
+                </div>
+                <p className="label mt-1 normal-case">{x.context}</p>
+                <p className="mt-2 text-sm leading-relaxed">{x.angle}</p>
+                <blockquote className="mt-2 border-l-2 border-current pl-3 text-sm italic opacity-85">{x.quote}</blockquote>
+              </article>
+            ))}
+          </div>
+        </Block>
+      )}
+      {l.reflection && (
+        <Block title={t('Retour d’expérience', 'Looking back')}>
+          <p className="leading-relaxed">{l.reflection}</p>
+        </Block>
+      )}
       {l.skills.length > 0 && (
         <Block title={quest ? t('Récompenses : compétences', 'Rewards: skills') : t('Compétences', 'Skills')}>
           <Tags items={l.skills} />
@@ -168,8 +192,55 @@ function LogDetail({ l }: { l: LogEntry }) {
   )
 }
 
+function ProofLinks({ ids, onJump }: { ids: string[]; onJump: (tab: TabId, id: string) => void }) {
+  const { P } = useLang()
+  return (
+    <div className="space-y-2">
+      {ids.map((id) => {
+        const p = findProof(P, id)
+        return (
+          p && (
+            <button key={id} type="button" onClick={() => onJump(p.tab, id)} className="btn flex! w-full">
+              <span className="bullet" />
+              <span className="w-44 flex-none truncate max-sm:w-28">{p.label}</span>
+              <span className="flex-1 truncate text-sm opacity-80">{p.summary}</span>
+            </button>
+          )
+        )
+      })}
+    </div>
+  )
+}
+
+function KeySkillDetail({ k, onJump }: { k: KeySkill; onJump: (tab: TabId, id: string) => void }) {
+  const { t } = useLang()
+  return (
+    <div className="space-y-6">
+      <Header over={t('PROFIL // COMPÉTENCE CLÉ', 'PROFILE // KEY COMPETENCE')} title={k.name} sub={k.summary} />
+      <dl>
+        <Field k={t('Pourquoi elle compte', 'Why it matters')} v={k.why} />
+        <Field k={t('Maîtrise estimée', 'Self-assessed mastery')} v={<Meter value={k.level} />} />
+      </dl>
+      <Block title={`${t('Preuves', 'Proofs')} (${k.proofs.length})`}>
+        <ProofLinks ids={k.proofs} onJump={onJump} />
+      </Block>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Block title={t('Ce que je maîtrise', 'What I can do')}>
+          <SquareList items={k.mastered} />
+        </Block>
+        <Block title={t('Mes limites', 'Where I fall short')}>
+          <SquareList items={k.gaps} />
+        </Block>
+      </div>
+      <Block title={t('Prochaines actions', 'Next steps')}>
+        <SquareList items={k.next} />
+      </Block>
+    </div>
+  )
+}
+
 function SkillDetail({ s, kind, onJump }: { s: Skill; kind: string; onJump: (tab: TabId, id: string) => void }) {
-  const { P, t } = useLang()
+  const { t } = useLang()
   return (
     <div className="space-y-6">
       <Header over={kind} title={s.name} sub={s.detail} />
@@ -181,20 +252,7 @@ function SkillDetail({ s, kind, onJump }: { s: Skill; kind: string; onJump: (tab
         </dl>
       )}
       <Block title={`${t('Preuves liées', 'Linked proofs')} (${s.proofs.length})`}>
-        <div className="space-y-2">
-          {s.proofs.map((id) => {
-            const p = findProof(P, id)
-            return (
-              p && (
-                <button key={id} type="button" onClick={() => onJump(p.tab, id)} className="btn flex! w-full">
-                  <span className="bullet" />
-                  <span className="w-44 flex-none truncate max-sm:w-28">{p.label}</span>
-                  <span className="flex-1 truncate text-sm opacity-80">{p.summary}</span>
-                </button>
-              )
-            )
-          })}
-        </div>
+        <ProofLinks ids={s.proofs} onJump={onJump} />
       </Block>
     </div>
   )
@@ -207,7 +265,7 @@ export function detailTitle(P: Profile, id: string): string {
   return (
     P.projects.find((p) => p.id === id)?.code ??
     allLogs(P).find((l) => l.id === id)?.title.toUpperCase() ??
-    [...P.hardSkills, ...P.softSkills].find((s) => s.id === id)?.name.toUpperCase() ??
+    [...P.hardSkills, ...P.softSkills, ...P.keySkills].find((s) => s.id === id)?.name.toUpperCase() ??
     id
   )
 }
@@ -228,5 +286,7 @@ export function renderDetail(P: Profile, t: T, id: string, onJump: (tab: TabId, 
     )
   const s = P.softSkills.find((x) => x.id === id)
   if (s) return <SkillDetail s={s} kind={t('PROFIL // SOFT SKILL', 'PROFILE // SOFT SKILL')} onJump={onJump} />
+  const k = P.keySkills.find((x) => x.id === id)
+  if (k) return <KeySkillDetail k={k} onJump={onJump} />
   return null
 }
