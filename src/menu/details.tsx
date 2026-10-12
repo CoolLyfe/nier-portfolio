@@ -179,9 +179,9 @@ function LogDetail({ l }: { l: LogEntry }) {
                     href={x.file}
                     target="_blank"
                     rel="noopener"
-                    className="label mt-3 inline-flex items-center gap-1.5 normal-case opacity-70 hover:underline hover:opacity-100"
+                    className="label mt-3 inline-flex items-center gap-1.5 border border-current px-2 py-1 normal-case opacity-90 transition-opacity hover:opacity-100 hover:underline"
                   >
-                    <GlyphIcon name="download" className="h-3.5 w-3.5" />
+                    <GlyphIcon name="download" className="h-4 w-4" />
                     {t('Lire le texte (PDF)', 'Read the text (PDF, in French)')}
                   </a>
                 )}
