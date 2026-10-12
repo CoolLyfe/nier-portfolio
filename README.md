@@ -18,6 +18,9 @@ Le téléphone et l'adresse postale ne sont volontairement pas publiés.
 
 Les captures d'écran servant de preuves vont dans `public/evidence/`.
 
+Mes textes de concours d'éloquence sont dans `public/speeches/` (PDF, métadonnées retirées) et se rattachent à chaque discours par le champ `file`.
+Ils apparaissent en petit lien « Lire le texte (PDF) » sous chaque discours (ENGAGEMENTS › Prise de parole › Éloquence, dossier complet).
+
 ### Ajouter des photos
 
 Les cadres photo de l'accueil et de VIE PERSO › Galerie affichent « Donnée visuelle en attente » tant qu'ils sont vides.
@@ -131,3 +134,10 @@ src/
 ## Déploiement
 
 Chaque push sur `main` déclenche `.github/workflows/deploy.yml`, qui publie le site sur GitHub Pages.
+
+## Licence
+
+- **Code** : licence MIT, réutilisable librement.
+- **Contenu personnel** (textes, photos, vidéo, CV, discours) : © 2026 Louis Leymonie, tous droits réservés.
+
+Le détail est dans [`LICENSE`](LICENSE).

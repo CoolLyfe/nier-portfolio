@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { GlyphIcon } from '../components/icons'
 import { Field, Meter, SquareList, Tag } from '../components/ui'
 import type { T } from '../data/lang'
 import type { KeySkill, LogEntry, Profile, Project, Skill, TabId } from '../data/profile'
@@ -173,6 +174,17 @@ function LogDetail({ l }: { l: LogEntry }) {
                 <p className="label mt-1 normal-case">{x.context}</p>
                 <p className="mt-2 text-sm leading-relaxed">{x.angle}</p>
                 <blockquote className="mt-2 border-l-2 border-current pl-3 text-sm italic opacity-85">{x.quote}</blockquote>
+                {x.file && (
+                  <a
+                    href={x.file}
+                    target="_blank"
+                    rel="noopener"
+                    className="label mt-3 inline-flex items-center gap-1.5 normal-case opacity-70 hover:underline hover:opacity-100"
+                  >
+                    <GlyphIcon name="download" className="h-3.5 w-3.5" />
+                    {t('Lire le texte (PDF)', 'Read the text (PDF, in French)')}
+                  </a>
+                )}
               </article>
             ))}
           </div>

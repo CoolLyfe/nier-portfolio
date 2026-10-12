@@ -69,6 +69,8 @@ export interface Speech {
   quote: string
   /** e.g. "5e / 18" */
   result?: string
+  /** full text as written, relative to public/ */
+  file?: string
 }
 
 /**
@@ -919,6 +921,7 @@ export function buildProfile(t: T) {
             'Bread isn’t expensive, it is precious. I carry the metaphor of kneading and baking over to the alphabet (26 letters, from Zola to Victor Hugo), then to my own speech: writing it is kneading, presenting it is baking. With an old piece of bread pulled from my pocket as a prop.',
           ),
           quote: t('Écrire et lire, c’est pétrir et enfourner l’alphabet.', 'Writing and reading is kneading and baking the alphabet.'),
+          file: 'speeches/pain.pdf',
           result: t('5e / 18', '5th / 18'),
         },
         {
@@ -930,6 +933,7 @@ export function buildProfile(t: T) {
             '“Why” as the engine of humanity: the first fish to leave the water, the question that led Volta to the battery, then Eve before the tree of knowledge. It opens in silence, as if I were asking myself why I was there.',
           ),
           quote: t('Souvent, nous n’avons pas de réponse à ce « pourquoi », mais c’est justement ça qui nous fait avancer.', 'Often we have no answer to that “why”, and that is exactly what keeps us moving.'),
+          file: 'speeches/pourquoi.pdf',
         },
         {
           id: 'jeunesse',
@@ -940,6 +944,7 @@ export function buildProfile(t: T) {
             'Defending with conviction, and some irony, a position that isn’t mine: youth as the age when you just endure, then as the generation adults blame for everything.',
           ),
           quote: t('Elle est le long et interminable commencement de notre existence.', 'It is the long, endless beginning of our existence.'),
+          file: 'speeches/jeunesse.pdf',
         },
         {
           id: 'courbe',
@@ -953,6 +958,7 @@ export function buildProfile(t: T) {
             'Start by reducing the curve to a soulless line, then turn it all around with a “What nonsense!”: a friendship without conflicts, a world without reliefs would have no flavour.',
           ),
           quote: t('Le bonheur, la beauté se trouvent dans les moindres reliefs du trait que nous traçons, et qu’on appelle la vie.', 'Happiness and beauty lie in the smallest reliefs of the line we draw, and call life.'),
+          file: 'speeches/courbe.pdf',
         },
         {
           id: 'chocolat',
@@ -963,6 +969,7 @@ export function buildProfile(t: T) {
             'Start from Forrest Gump, describe the box as a crafted object where every chocolate is unique, then turn the image to the audience: we too are made of a few ingredients and a story of our own.',
           ),
           quote: t('Nous aussi avons eu notre propre histoire, spécifique à où nous sommes nés, et où nous avons vécu.', 'We too have had our own story, specific to where we were born and where we have lived.'),
+          file: 'speeches/chocolat.pdf',
         },
       ],
       photo: 'speech',
